@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Union — Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ── TOKENS ── */
+  :root {
+    --ink:       #1C1C1A;
+    --wood:      #A97C50;
+    --sage:      #6B8F5E;
+    --moss:      #3D5C36;
+    --cream:     #F5EFE6;
+    --linen:     #EDE4D8;
+    --warm-white:#FDFAF6;
+    --muted:     #8A8278;
+    --border:    rgba(28,28,26,0.10);
+    --border-warm: rgba(169,124,80,0.25);
+    --shadow:    0 2px 12px rgba(28,28,26,0.08);
+    --header-h:  68px;
+    --ticker-h:  38px;
+    --nav-h:     52px;
+    --total-top: calc(var(--header-h) + var(--ticker-h) + var(--nav-h));
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--warm-white);
+    color: var(--ink);
+    font-family: 'Lato', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    touch-action: pan-y;
+  }
+
+  /* ── STICKY HEADER ── */
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--header-h);
+    z-index: 100;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border-warm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .wordmark {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .header-sub {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .leaf-mark {
+    width: 16px;
+    height: 16px;
+    background: var(--sage);
+    border-radius: 50% 0 50% 0;
+    transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+
+  /* header right: edit mode + timestamp */
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .edit-btn {
+    background: none;
+    border: 1.5px solid var(--border-warm);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-family: 'Lato', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .edit-btn:hover, .edit-btn.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--cream);
+  }
+
+  .timestamp {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 300;
+    white-space: nowrap;
+  }
+
+  #sellwoodTap {
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    padding: 4px 6px;
+    margin: -4px -6px;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+  }
+  body.edit-mode #sellwoodTap {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  /* ── TICKER ── */
+  .ticker-wrap {
+    position: fixed;
+    top: var(--header-h);
+    left: 0; right: 0;
+    height: var(--ticker-h);
+    background: var(--ink);
+    overflow: hidden;
+    z-index: 99;
+    display: flex;
+    align-items: center;
+  }
+
+  .ticker-track {
+    display: flex;
+    gap: 0;
+    white-space: nowrap;
+    animation: ticker-scroll 50s linear infinite;
+    will-change: transform;
+  }
+
+  .ticker-item {
+    padding: 0 40px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--linen);
+    flex-shrink: 0;
+  }
+
+  .ticker-item::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background: var(--wood);
+    border-radius: 50%;
+    margin-right: 14px;
+    vertical-align: middle;
+    margin-bottom: 2px;
+  }
+
+  @keyframes ticker-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── TAB NAV ── */
+  .tab-nav {
+    position: fixed;
+    top: calc(var(--header-h) + var(--ticker-h));
+    left: 0; right: 0;
+    height: var(--nav-h);
+    background: var(--linen);
+    border-bottom: 1px solid var(--border-warm);
+    display: flex;
+    align-items: stretch;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    z-index: 98;
+  }
+  .tab-nav::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    padding: 0 22px;
+    font-family: 'Lato', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .tab-btn.active {
+    color: var(--ink);
+    border-bottom-color: var(--wood);
+  }
+
+  /* ── CONTENT ── */
+  .content-area {
+    position: fixed;
+    top: var(--total-top);
+    left: 0; right: 0;
+    bottom: 0;
+    overflow: hidden;
+  }
+
+  .pages-wrap {
+    display: flex;
+    width: 400%;
+    height: 100%;
+    transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .page {
+    width: 25%;
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 20px 40px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-warm) transparent;
+  }
+
+  /* ── SECTION BLOCKS ── */
+  .section-block {
+    margin-bottom: 28px;
+  }
+
+  .section-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 0 8px;
+    border-bottom: 1px solid var(--border-warm);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label .sl-accent {
+    width: 6px;
+    height: 6px;
+    background: var(--sage);
+    border-radius: 50% 0 50% 0;
+    transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+
+  /* ── PRODUCT ROWS ── */
+  .product-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(169,124,80,0.10);
+    transition: opacity 0.2s;
+  }
+
+  .product-row:last-child { border-bottom: none; }
+
+  .product-row.out-of-stock {
+    opacity: 0.35;
+  }
+
+  .product-name {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  .product-detail {
+    font-size: 11px;
+    font-weight: 300;
+    color: var(--muted);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  .product-price {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--wood);
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  /* ── EDIT MODE ── */
+  .edit-mode .product-row {
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 9px 8px;
+    margin: 0 -8px;
+  }
+  .edit-mode .product-row:hover {
+    background: rgba(169,124,80,0.07);
+  }
+
+  .edit-mode .toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .oos-indicator {
+    display: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--wood);
+    flex-shrink: 0;
+  }
+  .product-row.out-of-stock .oos-indicator { background: #ccc; }
+  .edit-mode .oos-indicator { display: block; }
+
+  /* ── EDIT PANEL ── */
+  .edit-panel {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--cream);
+    border-top: 1px solid var(--border-warm);
+    padding: 16px 20px;
+    z-index: 200;
+    box-shadow: 0 -4px 20px rgba(28,28,26,0.12);
+  }
+  .edit-panel.visible { display: block; }
+
+  .edit-panel-title {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border-warm);
+    background: var(--warm-white);
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .action-btn.primary {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--cream);
+  }
+
+  .action-btn:hover { opacity: 0.8; }
+
+  .edit-panel-close {
+    position: absolute;
+    top: 14px; right: 16px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--muted);
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+  }
+
+  /* ── SETTINGS OVERLAY ── */
+  .settings-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(28,28,26,0.45);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .settings-overlay.visible {
+    display: flex;
+  }
+
+  .settings-card {
+    position: relative;
+    background: var(--cream);
+    border-radius: 18px;
+    border: 1px solid var(--border-warm);
+    padding: 28px 24px 24px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 12px 40px rgba(28,28,26,0.25);
+  }
+
+  .settings-title {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  .settings-copy {
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .settings-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border-warm);
+    background: var(--warm-white);
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 14px;
+  }
+  .settings-input:focus {
+    outline: none;
+    border-color: var(--wood);
+  }
+
+  .settings-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .settings-status {
+    margin-top: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--sage);
+    min-height: 14px;
+  }
+  .settings-status.error { color: #b5563f; }
+
+  /* ── LOADING STATE ── */
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60%;
+    gap: 16px;
+  }
+
+  .loading-leaf {
+    width: 28px;
+    height: 28px;
+    background: var(--sage);
+    border-radius: 50% 0 50% 0;
+    transform: rotate(45deg);
+    animation: leaf-pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes leaf-pulse {
+    0%, 100% { opacity: 0.3; transform: rotate(45deg) scale(0.85); }
+    50%       { opacity: 1;   transform: rotate(45deg) scale(1.1); }
+  }
+
+  .loading-text {
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── ERROR STATE ── */
+  .error-state {
+    text-align: center;
+    padding: 48px 24px;
+  }
+  .error-state p {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.7;
+  }
+  .error-state strong {
+    font-weight: 700;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <div class="header-left">
+    <div class="leaf-mark"></div>
+    <span class="wordmark">Union</span>
+    <span class="header-sub" id="sellwoodTap">Cannabis · Sellwood</span>
+  </div>
+  <div class="header-right">
+    <span class="timestamp" id="timestamp"></span>
+  </div>
+</header>
+
+<!-- ── TICKER ── -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="tickerTrack">
+    <!-- populated by JS -->
+  </div>
+</div>
+
+<!-- ── TAB NAV ── -->
+<nav class="tab-nav" id="tabNav">
+  <button class="tab-btn active" onclick="switchTab(0)">Pre-Rolls</button>
+  <button class="tab-btn" onclick="switchTab(1)">Packs</button>
+  <button class="tab-btn" onclick="switchTab(2)">Flower</button>
+  <button class="tab-btn" onclick="switchTab(3)">Vapes</button>
+  <button class="tab-btn" onclick="switchTab(4, true)">Dabs &amp; More</button>
+</nav>
+
+<!-- ── PAGES ── -->
+<div class="content-area">
+  <div class="pages-wrap" id="pagesWrap">
+    <div class="page" id="page0"><div class="loading-state"><div class="loading-leaf"></div><p class="loading-text">Loading menu…</p></div></div>
+    <div class="page" id="page1"></div>
+    <div class="page" id="page2"></div>
+    <div class="page" id="page3"></div>
+    <div class="page" id="page4"></div>
+  </div>
+</div>
+
+<!-- ── EDIT PANEL ── -->
+<div class="edit-panel" id="editPanel">
+  <button class="edit-panel-close" onclick="closeEditPanel()">✕</button>
+  <div class="edit-panel-title" id="editPanelTitle">Product name</div>
+  <div class="edit-actions">
+    <button class="action-btn" onclick="toggleStock()">Toggle In/Out of Stock</button>
+    <button class="action-btn primary" onclick="closeEditPanel()">Done</button>
+  </div>
+</div>
+
+<!-- ── SETTINGS PANEL (sheet connection) ── -->
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-card">
+    <button class="edit-panel-close" onclick="closeSettings()">✕</button>
+    <div class="settings-title">Connect Google Sheet</div>
+    <p class="settings-copy">Paste your published CSV link below. In Sheets: File → Share → Publish to web → format CSV → Publish, then copy the URL here.</p>
+    <input type="text" class="settings-input" id="sheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv">
+    <div class="settings-actions">
+      <button class="action-btn" onclick="refreshNow()">Refresh Now</button>
+      <button class="action-btn primary" onclick="saveSheetUrl()">Connect</button>
+    </div>
+    <div class="settings-status" id="settingsStatus"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// SHEET CONNECTION — set up in-app, no code editing needed.
+// Tap "Sellwood" in the header to enter Edit mode, then tap it again
+// (or use the gear that appears) to open the Sheet connection screen.
+// The URL is saved in this browser via the page's query string, so it
+// persists across reloads on this device. To remember it on a fresh
+// tablet/device, open the menu once via the link that includes ?sheet=...
+// ══════════════════════════════════════════════════════════════════
+
+const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTcWs8IbMa3nXUY6qvmyBqhT-OjIjiag1xwduEDTzg_xQv1Yh2RocwHD00hVk3c8SuDA_ZzuJjdg1Vr/pub?output=csv';
+let SHEET_URL = DEFAULT_SHEET_URL;
+
+// ── STATE ──
+let menuData    = {};
+let tickerItems = [];
+let editMode    = false;
+let selectedRow = null;
+let selectedKey = null;
+let currentTab  = 0;
+const stockOverrides = {}; // { "tab|section|name": true/false }
+
+// ── TAB MAPPING ──
+const TAB_NAMES = ['Pre-Rolls', 'Pre-Roll Packs', 'Flower', 'Vapes', 'Dabs & Tinctures'];
+const PAGE_COUNT = 5;
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  updateTimestamp();
+  setInterval(updateTimestamp, 60000);
+  restoreSheetUrl();
+  setupSellwoodTap();
+  setupSwipe();
+  if (SHEET_URL) {
+    loadData();
+  } else {
+    showSetupMessage();
+  }
+});
+
+function updateTimestamp() {
+  const now = new Date();
+  const opts = { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' };
+  document.getElementById('timestamp').textContent = now.toLocaleDateString('en-US', opts);
+}
+
+// ── SHEET URL PERSISTENCE ──
+// Primary: localStorage (survives reloads once hosted on a real domain,
+// e.g. GitHub Pages — this is what the iPad will use day to day).
+// Fallback: ?sheet= query param, useful for sharing a pre-configured link.
+// Both are wrapped defensively since some preview/sandbox contexts block
+// localStorage and history.replaceState entirely.
+const STORAGE_KEY = 'union_menu_sheet_url';
+
+function restoreSheetUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get('sheet');
+    if (fromUrl) {
+      SHEET_URL = decodeURIComponent(fromUrl);
+      return;
+    }
+  } catch (e) { /* ignore */ }
+
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored) SHEET_URL = stored;
+  } catch (e) { /* localStorage unavailable in this context */ }
+}
+
+function persistSheetUrl(url) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, url);
+  } catch (e) { /* localStorage unavailable — sheet still works for this session */ }
+}
+
+// ── HEADER TAP: Sellwood toggles Edit mode. Long-press opens Sheet settings ──
+function setupSellwoodTap() {
+  const el = document.getElementById('sellwoodTap');
+  let pressTimer = null;
+  let longPressed = false;
+
+  const start = () => {
+    longPressed = false;
+    pressTimer = setTimeout(() => {
+      longPressed = true;
+      openSettings();
+    }, 600);
+  };
+  const cancel = () => {
+    clearTimeout(pressTimer);
+  };
+  const end = () => {
+    clearTimeout(pressTimer);
+    if (!longPressed) {
+      toggleEditMode();
+    }
+  };
+
+  el.addEventListener('touchstart', start, { passive: true });
+  el.addEventListener('touchend', end, { passive: true });
+  el.addEventListener('touchcancel', cancel, { passive: true });
+  el.addEventListener('mousedown', start);
+  el.addEventListener('mouseup', end);
+  el.addEventListener('mouseleave', cancel);
+}
+
+// ── DATA LOADING ──
+async function loadData() {
+  if (!SHEET_URL) { showSetupMessage(); return; }
+  try {
+    const res  = await fetch(SHEET_URL + (SHEET_URL.includes('?') ? '&' : '?') + 't=' + Date.now());
+    const text = await res.text();
+    parseCSV(text);
+  } catch(e) {
+    showSetupMessage('Could not load that sheet. Double check the link is published as CSV.');
+  }
+}
+
+function refreshNow() {
+  const status = document.getElementById('settingsStatus');
+  status.classList.remove('error');
+  status.textContent = 'Refreshing…';
+  loadData().then(() => {
+    status.textContent = 'Menu refreshed.';
+  });
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) { showSetupMessage('Sheet looks empty — check your published CSV.'); return; }
+
+  const parsed = lines.slice(1).map(line => {
+    const cols = csvSplit(line);
+    return {
+      tab:      cols[0]?.trim() || '',
+      section:  cols[1]?.trim() || '',
+      name:     cols[2]?.trim() || '',
+      detail:   cols[3]?.trim() || '',
+      price:    cols[4]?.trim() || '',
+      inStock:  (cols[5]?.trim().toUpperCase() !== 'FALSE'),
+    };
+  });
+
+  tickerItems = parsed.filter(r => r.tab === 'ticker').map(r => r.name);
+  buildTicker();
+
+  const grouped = {};
+  for (const tab of TAB_NAMES) grouped[tab] = {};
+
+  parsed.filter(r => r.tab !== 'ticker').forEach(row => {
+    if (!grouped[row.tab]) return;
+    if (!grouped[row.tab][row.section]) grouped[row.tab][row.section] = [];
+    grouped[row.tab][row.section].push(row);
+  });
+
+  menuData = grouped;
+  renderAllPages();
+}
+
+function csvSplit(line) {
+  const result = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { inQ = !inQ; continue; }
+    if (ch === ',' && !inQ) { result.push(cur); cur = ''; continue; }
+    cur += ch;
+  }
+  result.push(cur);
+  return result;
+}
+
+// ── TICKER ──
+function buildTicker() {
+  const track = document.getElementById('tickerTrack');
+  if (!tickerItems.length) {
+    tickerItems = ['Union Cannabis · Sellwood', 'Women-owned · Green Certified', 'Ask a budtender!', 'Come say hello 🌱'];
+  }
+  const items = [...tickerItems, ...tickerItems, ...tickerItems, ...tickerItems];
+  track.innerHTML = items.map(t => `<span class="ticker-item">${t}</span>`).join('');
+}
+
+// ── RENDER ──
+function renderAllPages() {
+  TAB_NAMES.forEach((tabName, i) => {
+    renderPage(i, menuData[tabName] || {});
+  });
+}
+
+function renderPage(pageIdx, sections) {
+  const page = document.getElementById('page' + pageIdx);
+  if (!sections || !Object.keys(sections).length) {
+    page.innerHTML = `<div class="error-state"><p><strong>No items found</strong>Update your Google Sheet and refresh to see products.</p></div>`;
+    return;
+  }
+  let html = '';
+  for (const [secName, rows] of Object.entries(sections)) {
+    html += `<div class="section-block">
+      <div class="section-label"><span class="sl-accent"></span>${escHtml(secName)}</div>`;
+    rows.forEach(row => {
+      const key = `${pageIdx}|${secName}|${row.name}`;
+      const inStock = stockOverrides.hasOwnProperty(key) ? stockOverrides[key] : row.inStock;
+      const oos = !inStock ? 'out-of-stock' : '';
+      html += `<div class="product-row ${oos}" data-key="${escAttr(key)}" onclick="rowClick(this)">
+        <div class="toggle-btn">
+          <div class="oos-indicator"></div>
+          <div>
+            <div class="product-name">${escHtml(row.name)}</div>
+            ${row.detail ? `<div class="product-detail">${escHtml(row.detail)}</div>` : ''}
+          </div>
+        </div>
+        <div class="product-price">${escHtml(row.price)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  page.innerHTML = html;
+}
+
+function showSetupMessage(customMsg) {
+  const msg = customMsg || `Tap and hold "Sellwood" in the header to connect your Google Sheet.`;
+  for (let i = 0; i < PAGE_COUNT; i++) {
+    document.getElementById('page' + i).innerHTML = `
+      <div class="error-state">
+        <p><strong>Menu not connected</strong>${escHtml(msg)}</p>
+      </div>`;
+  }
+  buildTicker();
+}
+
+// ── TAB SWITCHING ──
+function switchTab(idx) {
+  idx = Math.max(0, Math.min(PAGE_COUNT - 1, idx));
+  currentTab = idx;
+  document.getElementById('pagesWrap').style.transform = `translateX(-${idx * 25}%)`;
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === idx);
+  });
+  const btn = document.querySelectorAll('.tab-btn')[idx];
+  if (btn) btn.scrollIntoView({ block:'nearest', inline:'nearest', behavior:'smooth' });
+}
+
+// ── SWIPE (live drag tracking + snap, with vertical-scroll passthrough) ──
+function setupSwipe() {
+  const area = document.getElementById('pagesWrap');
+  const wrap = document.querySelector('.content-area');
+  let startX = 0, startY = 0, deltaX = 0;
+  let dragging = false, axisLocked = null;
+  let widthPx = wrap.clientWidth;
+
+  window.addEventListener('resize', () => { widthPx = wrap.clientWidth; });
+
+  wrap.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    deltaX = 0;
+    axisLocked = null;
+    dragging = true;
+    area.style.transition = 'none';
+  }, { passive: true });
+
+  wrap.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const x = e.touches[0].clientX;
+    const y = e.touches[0].clientY;
+    const dx = x - startX;
+    const dy = y - startY;
+
+    if (axisLocked === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+      axisLocked = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    }
+    if (axisLocked !== 'x') return; // let vertical scroll happen natively
+
+    deltaX = dx;
+    // resist swiping past the first/last page
+    let resisted = deltaX;
+    if ((currentTab === 0 && deltaX > 0) || (currentTab === PAGE_COUNT - 1 && deltaX < 0)) {
+      resisted = deltaX * 0.3;
+    }
+    const basePct = -(currentTab * 25);
+    const dragPct = (resisted / widthPx) * 25;
+    area.style.transform = `translateX(${basePct + dragPct}%)`;
+  }, { passive: true });
+
+  wrap.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    area.style.transition = 'transform 0.32s cubic-bezier(0.4, 0, 0.2, 1)';
+    if (axisLocked === 'x') {
+      const threshold = widthPx * 0.16;
+      if (deltaX < -threshold && currentTab < PAGE_COUNT - 1) {
+        switchTab(currentTab + 1);
+      } else if (deltaX > threshold && currentTab > 0) {
+        switchTab(currentTab - 1);
+      } else {
+        switchTab(currentTab); // snap back
+      }
+    }
+    axisLocked = null;
+  }, { passive: true });
+
+  wrap.addEventListener('touchcancel', () => {
+    dragging = false;
+    area.style.transition = 'transform 0.32s cubic-bezier(0.4, 0, 0.2, 1)';
+    switchTab(currentTab);
+  }, { passive: true });
+}
+
+// ── EDIT MODE ──
+function toggleEditMode() {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+}
+
+function rowClick(el) {
+  if (!editMode) return;
+  const key = el.dataset.key;
+  const name = el.querySelector('.product-name').textContent;
+  selectedRow = el;
+  selectedKey = key;
+  document.getElementById('editPanelTitle').textContent = name;
+  document.getElementById('editPanel').classList.add('visible');
+}
+
+function toggleStock() {
+  if (!selectedRow || !selectedKey) return;
+  const isOos = selectedRow.classList.contains('out-of-stock');
+  selectedRow.classList.toggle('out-of-stock', !isOos);
+  stockOverrides[selectedKey] = isOos; // was oos, now in stock
+  closeEditPanel();
+}
+
+function closeEditPanel() {
+  document.getElementById('editPanel').classList.remove('visible');
+  selectedRow = null;
+  selectedKey = null;
+}
+
+// ── SETTINGS PANEL ──
+function openSettings() {
+  document.getElementById('sheetUrlInput').value = SHEET_URL || '';
+  document.getElementById('settingsStatus').textContent = '';
+  document.getElementById('settingsStatus').classList.remove('error');
+  document.getElementById('settingsOverlay').classList.add('visible');
+}
+
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('visible');
+}
+
+function saveSheetUrl() {
+  const val = document.getElementById('sheetUrlInput').value.trim();
+  const status = document.getElementById('settingsStatus');
+  if (!val) {
+    status.textContent = 'Paste a published CSV link first.';
+    status.classList.add('error');
+    return;
+  }
+  SHEET_URL = val;
+  persistSheetUrl(val);
+  status.classList.remove('error');
+  status.textContent = 'Connected. Loading menu…';
+  loadData().then(() => {
+    status.textContent = 'Menu connected and loaded.';
+    setTimeout(closeSettings, 900);
+  });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return String(s).replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
