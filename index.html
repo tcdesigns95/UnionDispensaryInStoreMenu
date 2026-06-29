@@ -37,6 +37,7 @@
     --fs-detail:      11px;
     --fs-price:       15px;
     --tap-min:        44px;
+    --page-pad:       20px;
   }
 
   /* ── TABLET BREAKPOINT (iPad portrait and up) ── */
@@ -53,6 +54,7 @@
       --fs-product:  17px;
       --fs-detail:   13px;
       --fs-price:    18px;
+      --page-pad:    32px;
     }
   }
 
@@ -70,6 +72,7 @@
       --fs-product:  18px;
       --fs-detail:   13px;
       --fs-price:    19px;
+      --page-pad:    40px;
     }
   }
 
@@ -303,13 +306,16 @@
 
   .section-label {
     font-size: var(--fs-section);
-    font-weight: 700;
-    letter-spacing: 0.22em;
+    font-weight: 800;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--muted);
-    padding: 10px 0 8px;
-    border-bottom: 1px solid var(--border-warm);
-    margin-bottom: 10px;
+    color: var(--ink);
+    padding: 10px var(--page-pad);
+    margin: 0 calc(-1 * var(--page-pad)) 12px;
+    background: var(--linen);
+    border-left: 4px solid var(--wood);
+    border-bottom: none;
+    border-radius: 0 6px 6px 0;
     display: flex;
     align-items: center;
     gap: 10px;
