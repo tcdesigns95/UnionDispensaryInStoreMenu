@@ -343,6 +343,26 @@
     .section-label {
       margin: 0 0 8px;
       border-radius: 14px 14px 0 0;
+      /* Keep brand headers the same height so strain lists align across cards */
+      min-height: 118px;
+    }
+
+    .section-label .brand-name {
+      min-height: calc(var(--fs-brand) * 1.15);
+    }
+
+    .section-label .brand-blurb {
+      display: block;
+      margin-top: 6px;
+      min-height: calc(var(--fs-detail) * 1.35);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: none;
+    }
+
+    .section-label .brand-blurb:empty {
+      visibility: hidden;
     }
 
     .section-block .product-row {
@@ -410,14 +430,13 @@
   }
 
   .section-label .brand-blurb {
-    margin-top: 6px;
+    margin-top: 5px;
     font-size: var(--fs-detail);
     font-weight: 400;
     font-style: normal;
     letter-spacing: 0.01em;
     color: var(--moss);
     line-height: 1.35;
-    max-width: 28ch;
   }
 
   /* ── PRODUCT ROWS ── */
@@ -978,7 +997,7 @@ function splitSectionLabel(secName) {
 
 // Short elevating lines under select house brands (customer-facing).
 const BRAND_BLURBS = {
-  'house rolls': 'Always packed with fresh flower straight from the jars.',
+  'house rolls': 'Fresh flower · packed from the jars',
 };
 
 function brandBlurbFor(brand) {
@@ -992,15 +1011,14 @@ function renderSectionLabel(secName) {
     ? `<div class="brand-format">${escHtml(format)}</div>`
     : '';
   const blurb = brandBlurbFor(brand);
-  const blurbHtml = blurb
-    ? `<div class="brand-blurb">${escHtml(blurb)}</div>`
-    : '';
+  // Always render the blurb slot in markup so landscape cards can reserve
+  // equal header height (empty slots stay invisible via CSS).
   return `<div class="section-label">
       <span class="sl-accent"></span>
       <div class="sl-text">
         ${formatHtml}
         <div class="brand-name">${escHtml(brand)}</div>
-        ${blurbHtml}
+        <div class="brand-blurb">${escHtml(blurb)}</div>
       </div>
     </div>`;
 }
