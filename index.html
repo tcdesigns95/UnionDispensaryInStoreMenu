@@ -807,7 +807,7 @@ function parseCSV(text) {
     };
   });
 
-  tickerItems = parsed.filter(r => r.tab === 'ticker').map(r => r.name);
+  tickerItems = parsed.filter(r => r.tab === 'ticker' && r.name).map(r => r.name);
   buildTicker();
 
   const grouped = {};
@@ -815,6 +815,9 @@ function parseCSV(text) {
 
   parsed.filter(r => r.tab !== 'ticker').forEach(row => {
     if (!grouped[row.tab]) return;
+    // Skip blank/template rows (section spacers + empty "add here" slots in the Sheet).
+    // Team can leave empty rows under each section without them showing on the tablet.
+    if (!row.name) return;
     if (!grouped[row.tab][row.section]) grouped[row.tab][row.section] = [];
     grouped[row.tab][row.section].push(row);
   });
