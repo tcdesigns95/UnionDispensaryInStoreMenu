@@ -288,17 +288,72 @@
     .page { padding: 28px 32px 56px; }
   }
 
-  /* Wide/landscape tablets: let section blocks flow into two columns
-     so the extra horizontal space gets used instead of one narrow
-     column floating in a wide viewport. */
+  /* Subtle hint under tabs — only shown in brand-card (landscape) mode */
+  .brand-swipe-hint {
+    display: none;
+    position: fixed;
+    top: calc(var(--total-top) - 2px);
+    right: 16px;
+    z-index: 40;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, var(--warm-white) 30%);
+    padding: 4px 0 4px 28px;
+  }
+
+  /* Wide / landscape counter tablets: brand swipe cards.
+     Each brand is its own panel; swipe left/right within the category.
+     Portrait stays a single vertical list. */
   @media (min-width: 1000px) {
+    .brand-swipe-hint { display: block; }
+
     .page {
-      padding: 32px 40px 64px;
-      column-count: 2;
-      column-gap: 48px;
+      padding: 18px 20px 20px;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      gap: 16px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-padding-left: 20px;
+      -webkit-overflow-scrolling: touch;
     }
+
     .section-block {
-      break-inside: avoid-column;
+      flex: 0 0 min(440px, 70vw);
+      width: min(440px, 70vw);
+      max-width: 520px;
+      margin-bottom: 0;
+      scroll-snap-align: start;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      background: rgba(253, 250, 246, 0.97);
+      border: 1px solid var(--border-warm);
+      border-radius: 14px;
+      padding: 0 0 14px;
+      max-height: 100%;
+    }
+
+    .section-label {
+      margin: 0 0 8px;
+      border-radius: 14px 14px 0 0;
+    }
+
+    .section-block .product-row {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .brand-card-end-spacer {
+      flex: 0 0 12px;
+      width: 12px;
+      scroll-snap-align: none;
     }
   }
 
@@ -650,6 +705,7 @@
   <button class="tab-btn" onclick="switchTab(3)">Vapes</button>
   <button class="tab-btn" onclick="switchTab(4)">Dabs &amp; More</button>
 </nav>
+<div class="brand-swipe-hint" aria-hidden="true">Swipe brands →</div>
 
 <!-- ── PAGES ── -->
 <div class="content-area">
@@ -950,7 +1006,9 @@ function renderPage(pageIdx, sections) {
     });
     html += `</div>`;
   }
+  html += `<div class="brand-card-end-spacer" aria-hidden="true"></div>`;
   page.innerHTML = html;
+  page.scrollLeft = 0;
 }
 
 function showSetupMessage(customMsg) {
@@ -974,9 +1032,15 @@ function switchTab(idx) {
   });
   const btn = document.querySelectorAll('.tab-btn')[idx];
   if (btn) btn.scrollIntoView({ block:'nearest', inline:'nearest', behavior:'smooth' });
+  // Landscape brand cards: start each category at the first brand panel.
+  const page = document.getElementById('page' + idx);
+  if (page) page.scrollLeft = 0;
 }
 
-// ── SWIPE (live drag tracking + snap, with vertical-scroll passthrough) ──
+// ── SWIPE (category tabs) ──
+// Portrait: horizontal swipe switches Pre-Rolls / Packs / Flower / …
+// Landscape brand-card mode: leave horizontal gestures to brand cards;
+// category changes stay on the tab bar so the two swipes don't fight.
 function setupSwipe() {
   const area = document.getElementById('pagesWrap');
   const wrap = document.querySelector('.content-area');
@@ -984,9 +1048,15 @@ function setupSwipe() {
   let dragging = false, axisLocked = null;
   let widthPx = wrap.clientWidth;
 
+  const brandCardsMode = () => window.matchMedia('(min-width: 1000px)').matches;
+
   window.addEventListener('resize', () => { widthPx = wrap.clientWidth; });
 
   wrap.addEventListener('touchstart', e => {
+    if (brandCardsMode()) {
+      dragging = false;
+      return;
+    }
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     deltaX = 0;
@@ -996,7 +1066,7 @@ function setupSwipe() {
   }, { passive: true });
 
   wrap.addEventListener('touchmove', e => {
-    if (!dragging) return;
+    if (!dragging || brandCardsMode()) return;
     const x = e.touches[0].clientX;
     const y = e.touches[0].clientY;
     const dx = x - startX;
@@ -1037,6 +1107,7 @@ function setupSwipe() {
 
   wrap.addEventListener('touchcancel', () => {
     dragging = false;
+    if (brandCardsMode()) return;
     area.style.transition = 'transform 0.32s cubic-bezier(0.4, 0, 0.2, 1)';
     switchTab(currentTab);
   }, { passive: true });
