@@ -409,6 +409,17 @@
     text-transform: none;
   }
 
+  .section-label .brand-blurb {
+    margin-top: 6px;
+    font-size: var(--fs-detail);
+    font-weight: 400;
+    font-style: normal;
+    letter-spacing: 0.01em;
+    color: var(--moss);
+    line-height: 1.35;
+    max-width: 28ch;
+  }
+
   /* ── PRODUCT ROWS ── */
   .product-row {
     display: grid;
@@ -965,16 +976,31 @@ function splitSectionLabel(secName) {
   return { format, brand: brand || raw };
 }
 
+// Short elevating lines under select house brands (customer-facing).
+const BRAND_BLURBS = {
+  'house rolls': 'Always packed with fresh flower straight from the jars.',
+};
+
+function brandBlurbFor(brand) {
+  const key = String(brand || '').trim().toLowerCase();
+  return BRAND_BLURBS[key] || '';
+}
+
 function renderSectionLabel(secName) {
   const { format, brand } = splitSectionLabel(secName);
   const formatHtml = format
     ? `<div class="brand-format">${escHtml(format)}</div>`
+    : '';
+  const blurb = brandBlurbFor(brand);
+  const blurbHtml = blurb
+    ? `<div class="brand-blurb">${escHtml(blurb)}</div>`
     : '';
   return `<div class="section-label">
       <span class="sl-accent"></span>
       <div class="sl-text">
         ${formatHtml}
         <div class="brand-name">${escHtml(brand)}</div>
+        ${blurbHtml}
       </div>
     </div>`;
 }
