@@ -353,6 +353,11 @@
       border-radius: 14px 14px 0 0;
       /* Keep brand headers the same height so strain lists align across cards */
       min-height: 118px;
+      /* Stick inside the card while its product list scrolls */
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--linen);
     }
 
     .section-label .brand-name {
@@ -393,13 +398,17 @@
   .section-label {
     padding: 14px var(--page-pad) 12px;
     margin: 0 calc(-1 * var(--page-pad)) 10px;
-    background: linear-gradient(180deg, var(--linen) 0%, rgba(237,228,216,0.55) 100%);
+    background: var(--linen);
     border-left: 4px solid var(--wood);
-    border-bottom: none;
+    border-bottom: 1px solid rgba(169,124,80,0.12);
     border-radius: 0 6px 6px 0;
     display: flex;
     align-items: flex-start;
     gap: 12px;
+    /* Freeze brand title while strains scroll underneath */
+    position: sticky;
+    top: 0;
+    z-index: 5;
   }
 
   .section-label .sl-accent {
