@@ -1297,7 +1297,8 @@ function renderFlowerPage(pageIdx, sections) {
   for (const [secName, rows] of Object.entries(sections)) {
     const t = typeFromSection(secName);
     const tagged = withSection(secName, rows);
-    if (t && /Deli/i.test(secName) && !/Sugartop/i.test(secName)) {
+    // Fold all typed deli flower (including Sugartop) into Sativa / Hybrid / Indica.
+    if (t && /Deli/i.test(secName)) {
       byType[t].push(...tagged);
     } else {
       other.push({ secName, rows: tagged });
