@@ -47,6 +47,9 @@
     --fs-price:       15px;
     --tap-min:        44px;
     --page-pad:       20px;
+    --sativa:         #C4783A;
+    --hybrid:         #6B8F5E;
+    --indica:         #4A6FA5;
   }
 
   /* ── TABLET BREAKPOINT (iPad portrait and up) ── */
@@ -296,119 +299,122 @@
     .page { padding: 28px 32px 56px; }
   }
 
-  /* Subtle hint under tabs — only shown in brand-card (landscape) mode */
-  .brand-swipe-hint {
-    display: none;
-    position: fixed;
-    top: calc(var(--total-top) - 2px);
-    right: 16px;
-    z-index: 40;
+  /* ── PAGE LAYOUT (card grid) ── */
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tier-banner {
+    background:
+      radial-gradient(ellipse 40% 80% at 0% 50%, rgba(107,143,94,0.14) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 80% at 100% 50%, rgba(107,143,94,0.14) 0%, transparent 70%),
+      linear-gradient(180deg, var(--cream) 0%, var(--linen) 100%);
+    border: 1px solid var(--border-warm);
+    border-radius: 10px;
+    padding: 12px 16px 14px;
+    flex-shrink: 0;
+  }
+  .tier-title {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+  .tier-rows { display: grid; gap: 3px; max-width: 520px; margin: 0 auto; }
+  .tier-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .tier-row strong { font-weight: 700; color: var(--moss); min-width: 3.2em; }
+
+  .sort-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    flex-shrink: 0;
+  }
+  .sort-group { display: flex; align-items: center; gap: 6px; }
+  .sort-label {
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
-    pointer-events: none;
-    background: linear-gradient(90deg, transparent, var(--warm-white) 30%);
-    padding: 4px 0 4px 28px;
+  }
+  .sort-btn {
+    border: 1px solid rgba(28,28,26,0.12);
+    background: #f4efe6;
+    color: var(--ink);
+    font: 700 11px/1 Lato, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .sort-btn.active {
+    background: var(--ink);
+    color: var(--warm-white);
+    border-color: var(--ink);
   }
 
-  /* Wide / landscape counter tablets: brand swipe cards.
-     Each brand is its own panel; swipe left/right within the category.
-     Portrait stays a single vertical list. */
-  @media (min-width: 1000px) {
-    .brand-swipe-hint { display: block; }
-
-    .page {
-      padding: 18px 20px 20px;
-      display: flex;
-      flex-direction: row;
-      align-items: stretch;
-      gap: 16px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scroll-snap-type: x mandatory;
-      scroll-padding-left: 20px;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .section-block {
-      flex: 0 0 min(440px, 70vw);
-      width: min(440px, 70vw);
-      max-width: 520px;
-      margin-bottom: 0;
-      scroll-snap-align: start;
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      background: rgba(253, 250, 246, 0.97);
-      border: 1px solid var(--border-warm);
-      border-radius: 14px;
-      padding: 0 0 14px;
-      max-height: 100%;
-    }
-
-    .section-label {
-      margin: 0 0 8px;
-      border-radius: 14px 14px 0 0;
-      /* Keep brand headers the same height so strain lists align across cards */
-      min-height: 118px;
-      /* Stick inside the card while its product list scrolls */
-      position: sticky;
-      top: 0;
-      z-index: 5;
-      background: var(--linen);
-    }
-
-    .section-label .brand-name {
-      min-height: calc(var(--fs-brand) * 1.15);
-    }
-
-    .section-label .brand-blurb {
-      display: block;
-      margin-top: 6px;
-      min-height: calc(var(--fs-detail) * 1.35);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: none;
-    }
-
-    .section-label .brand-blurb:empty {
-      visibility: hidden;
-    }
-
-    .section-block .product-row {
-      padding-left: 16px;
-      padding-right: 16px;
-    }
-
-    .brand-card-end-spacer {
-      flex: 0 0 12px;
-      width: 12px;
-      scroll-snap-align: none;
-    }
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-content: start;
+  }
+  @media (min-width: 860px) {
+    .card-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .card-grid.cols-auto { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .card-grid .section-block.span-2 { grid-column: 1 / -1; }
   }
 
-  /* ── SECTION BLOCKS (brand = title, format = eyebrow) ── */
+  /* ── SECTION BLOCKS (cards) ── */
   .section-block {
-    margin-bottom: 28px;
+    background: rgba(253, 250, 246, 0.97);
+    border: 1px solid var(--border-warm);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: min(520px, 70vh);
+  }
+  .section-block.featured {
+    border-color: rgba(169,124,80,0.45);
+    box-shadow: 0 0 0 1px rgba(169,124,80,0.12);
   }
 
   .section-label {
-    padding: 14px var(--page-pad) 12px;
-    margin: 0 calc(-1 * var(--page-pad)) 10px;
-    background: var(--linen);
+    padding: 12px 14px 10px;
+    margin: 0;
+    background: linear-gradient(180deg, var(--linen) 0%, rgba(237,228,216,0.45) 100%);
     border-left: 4px solid var(--wood);
     border-bottom: 1px solid rgba(169,124,80,0.12);
-    border-radius: 0 6px 6px 0;
+    border-radius: 0;
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    /* Freeze brand title while strains scroll underneath */
     position: sticky;
     top: 0;
     z-index: 5;
+    flex-shrink: 0;
+  }
+  .section-block[data-accent="sativa"] .section-label { border-left-color: var(--sativa); }
+  .section-block[data-accent="hybrid"] .section-label { border-left-color: var(--hybrid); }
+  .section-block[data-accent="indica"] .section-label { border-left-color: var(--indica); }
+  .section-block[data-accent="house"] .section-label {
+    border-left-color: var(--wood);
+    background: linear-gradient(180deg, #f3ebe0 0%, rgba(237,228,216,0.55) 100%);
   }
 
   .section-label .sl-accent {
@@ -420,10 +426,11 @@
     transform: rotate(45deg);
     flex-shrink: 0;
   }
+  .section-block[data-accent="sativa"] .sl-accent { background: var(--sativa); }
+  .section-block[data-accent="hybrid"] .sl-accent { background: var(--hybrid); }
+  .section-block[data-accent="indica"] .sl-accent { background: var(--indica); }
 
-  .section-label .sl-text {
-    min-width: 0;
-  }
+  .section-label .sl-text { min-width: 0; }
 
   .section-label .brand-format {
     font-size: var(--fs-section);
@@ -445,6 +452,9 @@
     line-height: 1.15;
     text-transform: none;
   }
+  .section-block[data-accent="sativa"] .brand-name { color: var(--sativa); font-style: normal; font-family: Lato, sans-serif; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-size: 13px; }
+  .section-block[data-accent="hybrid"] .brand-name { color: var(--hybrid); font-style: normal; font-family: Lato, sans-serif; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-size: 13px; }
+  .section-block[data-accent="indica"] .brand-name { color: var(--indica); font-style: normal; font-family: Lato, sans-serif; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-size: 13px; }
 
   .section-label .brand-blurb {
     margin-top: 5px;
@@ -455,18 +465,43 @@
     color: var(--muted);
     line-height: 1.35;
   }
+  .section-label .brand-blurb:empty { display: none; }
+
+  .col-head {
+    display: grid;
+    gap: 6px;
+    padding: 8px 14px 4px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .col-head.cols-flower { grid-template-columns: 1fr 52px 52px 56px; }
+  .col-head.cols-detail { grid-template-columns: 1.1fr 1fr 64px; }
+  .col-head span:not(:first-child) { text-align: right; }
+
+  .section-products {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 8px 10px;
+  }
 
   /* ── PRODUCT ROWS ── */
   .product-row {
     display: grid;
-    grid-template-columns: 1fr auto;
     align-items: baseline;
-    gap: 10px;
-    padding: 9px 0;
+    gap: 6px 10px;
+    padding: 9px 6px;
     min-height: var(--tap-min);
     border-bottom: 1px solid rgba(169,124,80,0.10);
     transition: opacity 0.2s;
   }
+  .product-row.cols-default { grid-template-columns: 1fr auto; }
+  .product-row.cols-flower { grid-template-columns: 1fr 52px 52px 56px; }
+  .product-row.cols-detail { grid-template-columns: 1.1fr 1fr 64px; }
 
   .product-row:last-child { border-bottom: none; }
 
@@ -487,6 +522,16 @@
     color: var(--muted);
     margin-top: 2px;
     line-height: 1.4;
+  }
+  .product-row.cols-detail .product-detail {
+    margin-top: 0;
+  }
+  .product-metric {
+    font-size: var(--fs-detail);
+    font-weight: 300;
+    color: var(--muted);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
 
   .product-price {
@@ -752,8 +797,6 @@
   <button class="tab-btn" onclick="switchTab(3)">Vapes</button>
   <button class="tab-btn" onclick="switchTab(4)">Dabs &amp; More</button>
 </nav>
-<div class="brand-swipe-hint" aria-hidden="true">Swipe brands →</div>
-
 <!-- ── PAGES ── -->
 <div class="content-area">
   <div class="pages-wrap" id="pagesWrap">
@@ -810,6 +853,8 @@ let editMode    = false;
 let selectedRow = null;
 let selectedKey = null;
 let currentTab  = 0;
+let sortField   = 'price';
+let sortDir     = 'desc';
 const stockOverrides = {}; // { "tab|section|name": true/false }
 
 // ── TAB MAPPING ──
@@ -1022,22 +1067,255 @@ function brandBlurbFor(brand) {
   return BRAND_BLURBS[key] || '';
 }
 
-function renderSectionLabel(secName) {
-  const { format, brand } = splitSectionLabel(secName);
+function parseFirstPct(detail) {
+  if (!detail) return null;
+  const m = String(detail).match(/(\d+(?:\.\d+)?)\s*%/);
+  return m ? parseFloat(m[1]) : null;
+}
+function parseCBD(detail) {
+  if (!detail) return null;
+  const m = String(detail).match(/(\d+(?:\.\d+)?)\s*%\s*CBD/i);
+  return m ? parseFloat(m[1]) : null;
+}
+function parsePriceNum(price) {
+  if (!price) return null;
+  const m = String(price).match(/(\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : null;
+}
+function fmtPct(n) {
+  if (n == null || Number.isNaN(n)) return '—';
+  const s = Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, '');
+  return s + '%';
+}
+function enrichRow(row) {
+  return {
+    ...row,
+    thc: parseFirstPct(row.detail),
+    cbd: parseCBD(row.detail),
+    priceNum: parsePriceNum(row.price),
+  };
+}
+function sortRows(rows) {
+  const mult = sortDir === 'asc' ? 1 : -1;
+  return [...rows].map(enrichRow).sort((a, b) => {
+    const av = sortField === 'price' ? (a.priceNum ?? -1) : (a.thc ?? -1);
+    const bv = sortField === 'price' ? (b.priceNum ?? -1) : (b.thc ?? -1);
+    if (av === bv) return a.name.localeCompare(b.name);
+    return (av - bv) * mult;
+  });
+}
+
+function setSortField(field) {
+  sortField = field;
+  renderAllPages();
+}
+function setSortDir(dir) {
+  sortDir = dir;
+  renderAllPages();
+}
+
+function renderSortBar() {
+  return `<div class="sort-bar" role="group" aria-label="Sort">
+    <div class="sort-group">
+      <span class="sort-label">Sort by</span>
+      <button type="button" class="sort-btn ${sortField === 'price' ? 'active' : ''}" onclick="setSortField('price')">Price</button>
+      <button type="button" class="sort-btn ${sortField === 'thc' ? 'active' : ''}" onclick="setSortField('thc')">THC</button>
+    </div>
+    <div class="sort-group">
+      <span class="sort-label">Order</span>
+      <button type="button" class="sort-btn ${sortDir === 'desc' ? 'active' : ''}" onclick="setSortDir('desc')">High → Low</button>
+      <button type="button" class="sort-btn ${sortDir === 'asc' ? 'active' : ''}" onclick="setSortDir('asc')">Low → High</button>
+    </div>
+  </div>`;
+}
+
+function renderSectionLabel({ title, format, blurb }) {
   const formatHtml = format
     ? `<div class="brand-format">${escHtml(format)}</div>`
     : '';
-  const blurb = brandBlurbFor(brand);
-  // Always render the blurb slot in markup so landscape cards can reserve
-  // equal header height (empty slots stay invisible via CSS).
+  const blurbHtml = blurb
+    ? `<div class="brand-blurb">${escHtml(blurb)}</div>`
+    : `<div class="brand-blurb"></div>`;
   return `<div class="section-label">
       <span class="sl-accent"></span>
       <div class="sl-text">
         ${formatHtml}
-        <div class="brand-name">${escHtml(brand)}</div>
-        <div class="brand-blurb">${escHtml(blurb)}</div>
+        <div class="brand-name">${escHtml(title)}</div>
+        ${blurbHtml}
       </div>
     </div>`;
+}
+
+function renderProductRow(pageIdx, secName, row, mode) {
+  const key = `${pageIdx}|${secName}|${row.name}`;
+  const inStock = stockOverrides.hasOwnProperty(key) ? stockOverrides[key] : row.inStock;
+  const oos = !inStock ? 'out-of-stock' : '';
+  const enriched = enrichRow(row);
+
+  if (mode === 'flower') {
+    return `<div class="product-row cols-flower ${oos}" data-key="${escAttr(key)}" onclick="rowClick(this)">
+      <div class="toggle-btn">
+        <div class="oos-indicator"></div>
+        <div class="product-name">${escHtml(row.name)}</div>
+      </div>
+      <div class="product-metric">${escHtml(fmtPct(enriched.thc))}</div>
+      <div class="product-metric">${escHtml(fmtPct(enriched.cbd))}</div>
+      <div class="product-price">${escHtml(row.price || '—')}</div>
+    </div>`;
+  }
+
+  if (mode === 'detail') {
+    return `<div class="product-row cols-detail ${oos}" data-key="${escAttr(key)}" onclick="rowClick(this)">
+      <div class="toggle-btn">
+        <div class="oos-indicator"></div>
+        <div class="product-name">${escHtml(row.name)}</div>
+      </div>
+      <div class="product-detail">${escHtml(row.detail || '—')}</div>
+      <div class="product-price">${escHtml(row.price || '—')}</div>
+    </div>`;
+  }
+
+  return `<div class="product-row cols-default ${oos}" data-key="${escAttr(key)}" onclick="rowClick(this)">
+    <div class="toggle-btn">
+      <div class="oos-indicator"></div>
+      <div>
+        <div class="product-name">${escHtml(row.name)}</div>
+        ${row.detail ? `<div class="product-detail">${escHtml(row.detail)}</div>` : ''}
+      </div>
+    </div>
+    <div class="product-price">${escHtml(row.price)}</div>
+  </div>`;
+}
+
+function renderCard({ pageIdx, title, format, blurb, accent, featured, span, mode, items }) {
+  const colHead = mode === 'flower'
+    ? `<div class="col-head cols-flower"><span>Strain</span><span>THC</span><span>CBD</span><span>Price</span></div>`
+    : mode === 'detail'
+      ? `<div class="col-head cols-detail"><span>Name</span><span>Detail</span><span>Price</span></div>`
+      : '';
+  const rowsHtml = sortRows(items).map(row =>
+    renderProductRow(pageIdx, row.section || title, row, mode || 'default')
+  ).join('');
+  return `<div class="section-block ${featured ? 'featured' : ''} ${span || ''}" data-accent="${escAttr(accent || 'wood')}">
+    ${renderSectionLabel({ title, format, blurb })}
+    ${colHead}
+    <div class="section-products">${rowsHtml}</div>
+  </div>`;
+}
+
+function typeFromSection(sec) {
+  const m = String(sec).match(/\((Sativa|Hybrid|Indica)\)/i);
+  return m ? m[1].toLowerCase() : null;
+}
+
+function withSection(secName, rows) {
+  return rows.map(r => ({ ...r, section: r.section || secName }));
+}
+
+function renderFlowerPage(pageIdx, sections) {
+  const byType = { sativa: [], hybrid: [], indica: [] };
+  const other = [];
+  for (const [secName, rows] of Object.entries(sections)) {
+    const t = typeFromSection(secName);
+    const tagged = withSection(secName, rows);
+    if (t && /Deli/i.test(secName) && !/Sugartop/i.test(secName)) {
+      byType[t].push(...tagged);
+    } else {
+      other.push({ secName, rows: tagged });
+    }
+  }
+
+  let html = `
+    <section class="tier-banner" aria-label="Deli flower pricing tiers">
+      <div class="tier-title">Deli Flower</div>
+      <div class="tier-rows">
+        <div class="tier-row"><strong>$6/g</strong> $20 ⅛ · $40 ¼ · $80 ½ · $150 oz</div>
+        <div class="tier-row"><strong>$9/g</strong> $25 ⅛ · $50 ¼ · $100 ½ · $180 oz</div>
+        <div class="tier-row"><strong>$10/g</strong> $30 ⅛ · $60 ¼ · $115 ½ · $210 oz</div>
+        <div class="tier-row"><strong>$12/g</strong> $39 ⅛ · $75 ¼ · $150 ½ · $240 oz</div>
+      </div>
+    </section>
+    ${renderSortBar()}
+    <div class="card-grid cols-3">
+      ${renderCard({ pageIdx, title: 'Sativa', accent: 'sativa', mode: 'flower', items: byType.sativa })}
+      ${renderCard({ pageIdx, title: 'Hybrid', accent: 'hybrid', mode: 'flower', items: byType.hybrid })}
+      ${renderCard({ pageIdx, title: 'Indica', accent: 'indica', mode: 'flower', items: byType.indica })}
+    </div>`;
+
+  if (other.length) {
+    html += `<div class="card-grid cols-auto">` + other.map(({ secName, rows }) => {
+      const { format, brand } = splitSectionLabel(secName);
+      return renderCard({
+        pageIdx,
+        title: brand || secName,
+        format,
+        mode: 'detail',
+        items: rows,
+      });
+    }).join('') + `</div>`;
+  }
+  return html;
+}
+
+function renderPreRollsPage(pageIdx, sections) {
+  const keys = Object.keys(sections);
+  const houseKey = keys.find(k => /House Rolls/i.test(k) && !/Mix/i.test(k));
+  const houseMixKey = keys.find(k => /House Mix/i.test(k));
+  const rest = keys.filter(k => k !== houseKey && k !== houseMixKey);
+
+  let html = renderSortBar() + `<div class="card-grid cols-auto">`;
+
+  if (houseKey || houseMixKey) {
+    const houseRows = [
+      ...(houseKey ? withSection(houseKey, sections[houseKey]) : []),
+      ...(houseMixKey ? withSection(houseMixKey, sections[houseMixKey]) : []),
+    ];
+    const { format } = splitSectionLabel(houseKey || houseMixKey);
+    html += renderCard({
+      pageIdx,
+      title: 'House Rolls',
+      format: format || 'Half Gram',
+      blurb: brandBlurbFor('House Rolls'),
+      accent: 'house',
+      featured: true,
+      span: 'span-2',
+      mode: 'detail',
+      items: houseRows,
+    });
+  }
+
+  for (const secName of rest) {
+    const { format, brand } = splitSectionLabel(secName);
+    const rows = withSection(secName, sections[secName]);
+    const mostlyPct = rows.every(r => !r.detail || /^[\d.]+\s*%?$/.test(r.detail.trim()));
+    html += renderCard({
+      pageIdx,
+      title: brand || secName,
+      format,
+      blurb: brandBlurbFor(brand),
+      mode: mostlyPct ? 'flower' : 'detail',
+      items: rows,
+    });
+  }
+  html += `</div>`;
+  return html;
+}
+
+function renderBrandCardsPage(pageIdx, sections) {
+  let html = renderSortBar() + `<div class="card-grid cols-auto">`;
+  for (const [secName, rows] of Object.entries(sections)) {
+    const { format, brand } = splitSectionLabel(secName);
+    html += renderCard({
+      pageIdx,
+      title: brand || secName,
+      format,
+      blurb: brandBlurbFor(brand),
+      mode: 'detail',
+      items: withSection(secName, rows),
+    });
+  }
+  html += `</div>`;
+  return html;
 }
 
 function renderPage(pageIdx, sections) {
@@ -1046,30 +1324,11 @@ function renderPage(pageIdx, sections) {
     page.innerHTML = `<div class="error-state"><p><strong>No items found</strong>Update your Google Sheet and refresh to see products.</p></div>`;
     return;
   }
-  let html = '';
-  for (const [secName, rows] of Object.entries(sections)) {
-    html += `<div class="section-block">
-      ${renderSectionLabel(secName)}`;
-    rows.forEach(row => {
-      const key = `${pageIdx}|${secName}|${row.name}`;
-      const inStock = stockOverrides.hasOwnProperty(key) ? stockOverrides[key] : row.inStock;
-      const oos = !inStock ? 'out-of-stock' : '';
-      html += `<div class="product-row ${oos}" data-key="${escAttr(key)}" onclick="rowClick(this)">
-        <div class="toggle-btn">
-          <div class="oos-indicator"></div>
-          <div>
-            <div class="product-name">${escHtml(row.name)}</div>
-            ${row.detail ? `<div class="product-detail">${escHtml(row.detail)}</div>` : ''}
-          </div>
-        </div>
-        <div class="product-price">${escHtml(row.price)}</div>
-      </div>`;
-    });
-    html += `</div>`;
-  }
-  html += `<div class="brand-card-end-spacer" aria-hidden="true"></div>`;
-  page.innerHTML = html;
-  page.scrollLeft = 0;
+  const tabName = TAB_NAMES[pageIdx];
+  if (tabName === 'Flower') page.innerHTML = renderFlowerPage(pageIdx, sections);
+  else if (tabName === 'Pre-Rolls') page.innerHTML = renderPreRollsPage(pageIdx, sections);
+  else page.innerHTML = renderBrandCardsPage(pageIdx, sections);
+  page.scrollTop = 0;
 }
 
 function showSetupMessage(customMsg) {
@@ -1093,15 +1352,12 @@ function switchTab(idx) {
   });
   const btn = document.querySelectorAll('.tab-btn')[idx];
   if (btn) btn.scrollIntoView({ block:'nearest', inline:'nearest', behavior:'smooth' });
-  // Landscape brand cards: start each category at the first brand panel.
   const page = document.getElementById('page' + idx);
-  if (page) page.scrollLeft = 0;
+  if (page) page.scrollTop = 0;
 }
 
 // ── SWIPE (category tabs) ──
-// Portrait: horizontal swipe switches Pre-Rolls / Packs / Flower / …
-// Landscape brand-card mode: leave horizontal gestures to brand cards;
-// category changes stay on the tab bar so the two swipes don't fight.
+// Horizontal swipe switches Pre-Rolls / Packs / Flower / …
 function setupSwipe() {
   const area = document.getElementById('pagesWrap');
   const wrap = document.querySelector('.content-area');
@@ -1109,15 +1365,9 @@ function setupSwipe() {
   let dragging = false, axisLocked = null;
   let widthPx = wrap.clientWidth;
 
-  const brandCardsMode = () => window.matchMedia('(min-width: 1000px)').matches;
-
   window.addEventListener('resize', () => { widthPx = wrap.clientWidth; });
 
   wrap.addEventListener('touchstart', e => {
-    if (brandCardsMode()) {
-      dragging = false;
-      return;
-    }
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     deltaX = 0;
@@ -1127,7 +1377,7 @@ function setupSwipe() {
   }, { passive: true });
 
   wrap.addEventListener('touchmove', e => {
-    if (!dragging || brandCardsMode()) return;
+    if (!dragging) return;
     const x = e.touches[0].clientX;
     const y = e.touches[0].clientY;
     const dx = x - startX;
@@ -1168,7 +1418,6 @@ function setupSwipe() {
 
   wrap.addEventListener('touchcancel', () => {
     dragging = false;
-    if (brandCardsMode()) return;
     area.style.transition = 'transform 0.32s cubic-bezier(0.4, 0, 0.2, 1)';
     switchTab(currentTab);
   }, { passive: true });
