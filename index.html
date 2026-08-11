@@ -391,6 +391,69 @@
     .card-grid .section-block.span-2 { grid-column: 1 / -1; }
   }
 
+  /* Flower tab: one board — type columns + packaged deals strip */
+  .flower-board {
+    border: 1px solid var(--border-warm);
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(253, 250, 246, 0.97);
+    min-width: 0;
+  }
+  .flower-board .card-grid {
+    gap: 0;
+  }
+  .flower-board .section-block {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    max-height: min(480px, 58vh);
+    box-shadow: none;
+  }
+  @media (min-width: 860px) {
+    .flower-board .card-grid.cols-3 > .section-block:not(:last-child) {
+      border-right: 1px solid rgba(169,124,80,0.14);
+    }
+  }
+  .flower-board .section-label {
+    border-radius: 0;
+  }
+  .flower-deals {
+    border-top: 1px solid rgba(169,124,80,0.18);
+    background: linear-gradient(180deg, rgba(237,228,216,0.55) 0%, transparent 48px);
+    padding: 12px 14px 14px;
+    min-width: 0;
+  }
+  .flower-deals-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .flower-deals-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--wood);
+  }
+  .flower-deals-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 28px;
+    min-width: 0;
+  }
+  @media (min-width: 700px) {
+    .flower-deals-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1000px) {
+    .flower-deals-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  .flower-deals .product-row {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   /* Shared row templates — keep header + rows in lockstep */
   .cols-flower {
     grid-template-columns:
@@ -1316,24 +1379,30 @@ function renderFlowerPage(pageIdx, sections) {
       </div>
     </section>
     ${renderSortBar()}
-    <div class="card-grid cols-3">
-      ${renderCard({ pageIdx, title: 'Sativa', accent: 'sativa', mode: 'flower', items: byType.sativa })}
-      ${renderCard({ pageIdx, title: 'Hybrid', accent: 'hybrid', mode: 'flower', items: byType.hybrid })}
-      ${renderCard({ pageIdx, title: 'Indica', accent: 'indica', mode: 'flower', items: byType.indica })}
-    </div>`;
+    <div class="flower-board">
+      <div class="card-grid cols-3">
+        ${renderCard({ pageIdx, title: 'Sativa', accent: 'sativa', mode: 'flower', items: byType.sativa })}
+        ${renderCard({ pageIdx, title: 'Hybrid', accent: 'hybrid', mode: 'flower', items: byType.hybrid })}
+        ${renderCard({ pageIdx, title: 'Indica', accent: 'indica', mode: 'flower', items: byType.indica })}
+      </div>`;
 
   if (other.length) {
-    html += `<div class="card-grid cols-auto">` + other.map(({ secName, rows }) => {
-      const { format, brand } = splitSectionLabel(secName);
-      return renderCard({
-        pageIdx,
-        title: brand || secName,
-        format,
-        mode: 'detail',
-        items: rows,
-      });
-    }).join('') + `</div>`;
+    const dealRows = other.flatMap(({ secName, rows }) => withSection(secName, rows));
+    const title = other.length === 1
+      ? (splitSectionLabel(other[0].secName).brand || other[0].secName)
+      : 'Packaged & Specialty';
+    html += `
+      <section class="flower-deals" aria-label="${escAttr(title)}">
+        <div class="flower-deals-head">
+          <div class="flower-deals-title">${escHtml(title)}</div>
+        </div>
+        <div class="flower-deals-grid">
+          ${sortRows(dealRows).map(row => renderProductRow(pageIdx, row.section, row, 'default')).join('')}
+        </div>
+      </section>`;
   }
+
+  html += `</div>`;
   return html;
 }
 
