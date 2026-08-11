@@ -428,17 +428,17 @@
   .flower-deals {
     border-bottom: 1px solid rgba(169,124,80,0.18);
     background: linear-gradient(180deg, var(--linen) 0%, rgba(253,250,246,0.98) 100%);
-    padding: 12px 14px 14px;
+    padding: 0 0 6px;
     min-width: 0;
     flex-shrink: 0;
     order: -1;
   }
   .flower-deals-head {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 8px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px 8px;
+    border-left: 4px solid var(--wood);
   }
   .flower-deals-title {
     font-size: 11px;
@@ -447,21 +447,20 @@
     text-transform: uppercase;
     color: var(--wood);
   }
-  .flower-deals-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0 28px;
+  .flower-deals .col-head {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .flower-deals-list {
+    padding: 0 12px 4px;
     min-width: 0;
-  }
-  @media (min-width: 700px) {
-    .flower-deals-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-  @media (min-width: 1000px) {
-    .flower-deals-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    max-height: min(180px, 24vh);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .flower-deals .product-row {
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 2px;
+    padding-right: 2px;
   }
 
   /* Shared row templates — keep header + rows in lockstep */
@@ -1209,7 +1208,9 @@ function brandBlurbFor(brand) {
 
 function parseFirstPct(detail) {
   if (!detail) return null;
-  const m = String(detail).match(/(\d+(?:\.\d+)?)\s*%/);
+  const s = String(detail).trim();
+  // "31.24%", "31.24% THC", or bare sheet values like "31.24"
+  const m = s.match(/(\d+(?:\.\d+)?)\s*%/) || s.match(/^(\d+(?:\.\d+)?)$/);
   return m ? parseFloat(m[1]) : null;
 }
 function parseCBD(detail) {
@@ -1232,6 +1233,7 @@ function formatPotency(detail) {
   const d = String(detail || '').trim();
   if (!d) return '—';
   if (/\bTHC\b/i.test(d)) return d;
+  if (/^\d+(?:\.\d+)?$/.test(d)) return d + '% THC';
   if (/^\d+(?:\.\d+)?\s*%$/.test(d)) return d + ' THC';
   // Multi-strain packs: "20% / 22% / 18%" → append THC once
   if (/^(?:\d+(?:\.\d+)?\s*%\s*)(?:\/\s*\d+(?:\.\d+)?\s*%\s*)+$/.test(d)) {
@@ -1406,8 +1408,11 @@ function renderFlowerPage(pageIdx, sections) {
         <div class="flower-deals-head">
           <div class="flower-deals-title">${escHtml(title)}</div>
         </div>
-        <div class="flower-deals-grid">
-          ${sortRows(dealRows).map(row => renderProductRow(pageIdx, row.section, row, 'default')).join('')}
+        <div class="col-head cols-flower">
+          <span>Strain</span><span>THC</span><span>CBD</span><span>Price</span>
+        </div>
+        <div class="flower-deals-list">
+          ${sortRows(dealRows).map(row => renderProductRow(pageIdx, row.section, row, 'flower')).join('')}
         </div>
       </section>`;
   }
