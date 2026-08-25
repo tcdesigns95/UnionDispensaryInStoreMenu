@@ -975,7 +975,8 @@
 <script>
 // ══════════════════════════════════════════════════════════════════
 // SHEET CONNECTION — already connected to Union's published sheet below.
-// Tap "Sellwood" in the header to toggle Edit mode (for stock toggles).
+// Tap "Sellwood" in the header to toggle Edit mode (temporary hide until refresh).
+// Set inStock to FALSE in the Google Sheet to permanently remove items from the menu.
 // Long-press "Sellwood" to open the Sheet connection screen if you ever
 // need to point the menu at a different sheet. That choice is saved in
 // this browser's local storage, so it persists across reloads on this
@@ -1249,9 +1250,17 @@ function enrichRow(row) {
     priceNum: parsePriceNum(row.price),
   };
 }
-function sortRows(rows) {
+function rowInStock(pageIdx, secName, row) {
+  const key = `${pageIdx}|${secName}|${row.name}`;
+  if (stockOverrides.hasOwnProperty(key)) return stockOverrides[key];
+  return row.inStock;
+}
+function sortRows(pageIdx, rows) {
   const mult = sortDir === 'asc' ? 1 : -1;
-  return [...rows].map(enrichRow).sort((a, b) => {
+  return rows
+    .filter(row => rowInStock(pageIdx, row.section || '', row))
+    .map(enrichRow)
+    .sort((a, b) => {
     const av = sortField === 'price' ? (a.priceNum ?? -1) : (a.thc ?? -1);
     const bv = sortField === 'price' ? (b.priceNum ?? -1) : (b.thc ?? -1);
     if (av === bv) return a.name.localeCompare(b.name);
@@ -1302,12 +1311,10 @@ function renderSectionLabel({ title, format, blurb }) {
 
 function renderProductRow(pageIdx, secName, row, mode) {
   const key = `${pageIdx}|${secName}|${row.name}`;
-  const inStock = stockOverrides.hasOwnProperty(key) ? stockOverrides[key] : row.inStock;
-  const oos = !inStock ? 'out-of-stock' : '';
   const enriched = enrichRow(row);
 
   if (mode === 'flower') {
-    return `<div class="product-row cols-flower ${oos}" data-key="${escAttr(key)}" onclick="rowClick(this)">
+    return `<div class="product-row cols-flower" data-key="${escAttr(key)}" onclick="rowClick(this)">
       <div class="toggle-btn">
         <div class="oos-indicator"></div>
         <div class="product-name">${escHtml(row.name)}</div>
@@ -1319,7 +1326,7 @@ function renderProductRow(pageIdx, secName, row, mode) {
   }
 
   if (mode === 'detail') {
-    return `<div class="product-row cols-detail ${oos}" data-key="${escAttr(key)}" onclick="rowClick(this)">
+    return `<div class="product-row cols-detail" data-key="${escAttr(key)}" onclick="rowClick(this)">
       <div class="toggle-btn">
         <div class="oos-indicator"></div>
         <div class="product-name">${escHtml(row.name)}</div>
@@ -1329,7 +1336,7 @@ function renderProductRow(pageIdx, secName, row, mode) {
     </div>`;
   }
 
-  return `<div class="product-row cols-default ${oos}" data-key="${escAttr(key)}" onclick="rowClick(this)">
+  return `<div class="product-row cols-default" data-key="${escAttr(key)}" onclick="rowClick(this)">
     <div class="toggle-btn">
       <div class="oos-indicator"></div>
       <div>
@@ -1347,7 +1354,9 @@ function renderCard({ pageIdx, title, format, blurb, accent, featured, span, mod
     : mode === 'detail'
       ? `<div class="col-head cols-detail"><span>Name</span><span>Potency</span><span>Price</span></div>`
       : '';
-  const rowsHtml = sortRows(items).map(row =>
+  const visible = sortRows(pageIdx, items);
+  if (!visible.length) return '';
+  const rowsHtml = visible.map(row =>
     renderProductRow(pageIdx, row.section || title, row, mode || 'default')
   ).join('');
   return `<div class="section-block ${featured ? 'featured' : ''} ${span || ''}" data-accent="${escAttr(accent || 'wood')}">
@@ -1358,8 +1367,12 @@ function renderCard({ pageIdx, title, format, blurb, accent, featured, span, mod
 }
 
 function typeFromSection(sec) {
-  const m = String(sec).match(/\((Sativa|Hybrid|Indica)\)/i);
-  return m ? m[1].toLowerCase() : null;
+  const m = String(sec).match(/\((Sativa|Hybrid|Indica|Hyrid|Hybird)\)/i);
+  if (!m) return null;
+  const t = m[1].toLowerCase();
+  // Common sheet typos for Hybrid
+  if (t === 'hyrid' || t === 'hybird') return 'hybrid';
+  return t;
 }
 
 function withSection(secName, rows) {
@@ -1400,6 +1413,8 @@ function renderFlowerPage(pageIdx, sections) {
 
   if (other.length) {
     const dealRows = other.flatMap(({ secName, rows }) => withSection(secName, rows));
+    const visibleDeals = sortRows(pageIdx, dealRows);
+    if (visibleDeals.length) {
     const title = other.length === 1
       ? (splitSectionLabel(other[0].secName).brand || other[0].secName)
       : 'Packaged & Specialty';
@@ -1412,9 +1427,10 @@ function renderFlowerPage(pageIdx, sections) {
           <span>Strain</span><span>THC</span><span>CBD</span><span>Price</span>
         </div>
         <div class="flower-deals-list">
-          ${sortRows(dealRows).map(row => renderProductRow(pageIdx, row.section, row, 'flower')).join('')}
+          ${visibleDeals.map(row => renderProductRow(pageIdx, row.section, row, 'flower')).join('')}
         </div>
       </section>`;
+    }
   }
 
   html += `</div>`;
@@ -1604,11 +1620,13 @@ function rowClick(el) {
 }
 
 function toggleStock() {
-  if (!selectedRow || !selectedKey) return;
-  const isOos = selectedRow.classList.contains('out-of-stock');
-  selectedRow.classList.toggle('out-of-stock', !isOos);
-  stockOverrides[selectedKey] = isOos; // was oos, now in stock
+  if (!selectedKey) return;
+  const currentlyInStock = stockOverrides.hasOwnProperty(selectedKey)
+    ? stockOverrides[selectedKey]
+    : true;
+  stockOverrides[selectedKey] = !currentlyInStock;
   closeEditPanel();
+  renderAllPages();
 }
 
 function closeEditPanel() {
