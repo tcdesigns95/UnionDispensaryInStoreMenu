@@ -1154,34 +1154,44 @@ function refreshNow() {
   });
 }
 
+function cleanCell(val) {
+  return String(val || '').replace(/\r/g, '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+}
+
+function parseSheetType(raw) {
+  const clean = cleanCell(raw);
+  if (!clean) return null;
+  return normalizeType(clean) || typeFromText(clean);
+}
+
 function parseCSV(text) {
   const lines = text.trim().split('\n');
   if (lines.length < 2) { showSetupMessage('Sheet looks empty — check your published CSV.'); return; }
 
-  const header = csvSplit(lines[0]).map(h => h.trim().toLowerCase());
+  const header = csvSplit(lines[0]).map(h => cleanCell(h).toLowerCase());
   const hasTypeCol = header.includes('type');
 
   const parsed = lines.slice(1).map(line => {
-    const cols = csvSplit(line);
+    const cols = csvSplit(line).map(cleanCell);
     if (hasTypeCol) {
       return {
-        tab:      cols[0]?.trim() || '',
-        section:  cols[1]?.trim() || '',
-        name:     cols[2]?.trim() || '',
-        type:     typeFromText(cols[3]?.trim()) || normalizeType(cols[3]?.trim()) || null,
-        detail:   cols[4]?.trim() || '',
-        price:    cols[5]?.trim() || '',
-        inStock:  (cols[6]?.trim().toUpperCase() !== 'FALSE'),
+        tab:      cols[0] || '',
+        section:  cols[1] || '',
+        name:     cols[2] || '',
+        variety:  parseSheetType(cols[3]) || null,
+        detail:   cols[4] || '',
+        price:    cols[5] || '',
+        inStock:  (cols[6]?.toUpperCase() !== 'FALSE'),
       };
     }
     return {
-      tab:      cols[0]?.trim() || '',
-      section:  cols[1]?.trim() || '',
-      name:     cols[2]?.trim() || '',
-      detail:   cols[3]?.trim() || '',
-      price:    cols[4]?.trim() || '',
-      inStock:  (cols[5]?.trim().toUpperCase() !== 'FALSE'),
-      type:     normalizeType(cols[6]?.trim()) || null,
+      tab:      cols[0] || '',
+      section:  cols[1] || '',
+      name:     cols[2] || '',
+      detail:   cols[3] || '',
+      price:    cols[4] || '',
+      inStock:  (cols[5]?.toUpperCase() !== 'FALSE'),
+      variety:  parseSheetType(cols[6]) || null,
     };
   });
 
@@ -1552,10 +1562,17 @@ function rebuildStrainTypeIndex() {
   }
 }
 
+function sheetVariety(row) {
+  const raw = row?.variety || row?.type;
+  if (!raw) return null;
+  return normalizeType(raw) || typeFromText(raw);
+}
+
 function typeFromRow(row) {
   if (isHouseMixRow(row)) return 'hybrid';
-  return row.type
-    || typeFromSection(row.section)
+  const fromSheet = sheetVariety(row);
+  if (fromSheet) return fromSheet;
+  return typeFromSection(row.section)
     || typeFromText(row.name)
     || typeFromText(row.detail)
     || strainTypeFromName(row.name);
@@ -1581,6 +1598,12 @@ function splitFlowerSections(sections) {
     const isDeli = /Deli/i.test(secName);
     const isPackaged = /Packaged|Specialty|Deal/i.test(secName);
 
+    // Packaged / deal flower stays on the Deals tab; Type column only sets dot color.
+    if (isPackaged) {
+      sales.push(...tagged);
+      continue;
+    }
+
     if (isDeli && sectionType) {
       byType[sectionType].push(...tagged);
       continue;
@@ -1590,7 +1613,7 @@ function splitFlowerSections(sections) {
       const rowType = typeFromRow(row);
       if (rowType) {
         byType[rowType].push(row);
-      } else if (isPackaged || isDeli) {
+      } else if (isDeli) {
         sales.push(row);
       }
     }
