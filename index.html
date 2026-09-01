@@ -55,45 +55,46 @@
     --indica:         #4A6FA5;
   }
 
-  /* ── TABLET BREAKPOINT (iPad portrait and up) ── */
+  /* ── TABLET BREAKPOINT (in-store iPads) — compact chrome, bigger menu ── */
   @media (min-width: 700px) {
     :root {
-      --header-h: 80px;
-      --ticker-h: 44px;
-      --nav-h:    60px;
-      --fs-wordmark: 42px;
-      --fs-eyebrow:  11px;
-      --fs-ticker:   13px;
-      --fs-tab:      13px;
-      --fs-section:  10px;
-      --fs-brand:    20px;
-      --fs-product:  14px;
+      --header-h: 50px;
+      --ticker-h: 26px;
+      --nav-h:    36px;
+      --fs-wordmark: 24px;
+      --fs-eyebrow:  8px;
+      --fs-ticker:   9px;
+      --fs-tab:      9px;
+      --fs-section:  9px;
+      --fs-brand:    18px;
+      --fs-product:  15px;
       --fs-detail:   12px;
-      --fs-price:    14px;
-      --page-pad:    24px;
-      --col-metric:  3.6rem;
-      --col-price:   5.25rem;
+      --fs-price:    15px;
+      --page-pad:    12px;
+      --col-metric:  3.25rem;
+      --col-price:   4.5rem;
+      --tap-min:     36px;
     }
+    .header { padding: 0 14px; }
+    .tab-btn { padding: 0 12px; letter-spacing: 0.1em; }
+    .timestamp { font-size: 9px; }
+    .leaf-mark { width: 12px; height: 12px; }
+    .ticker-item { padding: 0 28px; }
   }
 
-  /* ── LARGE / LANDSCAPE TABLET (iPad landscape, larger iPads) ── */
+  /* ── LARGE TABLET / LANDSCAPE ── */
   @media (min-width: 1000px) {
     :root {
-      --header-h: 88px;
-      --ticker-h: 46px;
-      --nav-h:    64px;
-      --fs-wordmark: 46px;
-      --fs-eyebrow:  12px;
-      --fs-ticker:   13px;
-      --fs-tab:      14px;
-      --fs-section:  11px;
-      --fs-brand:    22px;
-      --fs-product:  14px;
-      --fs-detail:   12px;
-      --fs-price:    14px;
-      --page-pad:    28px;
-      --col-metric:  3.75rem;
-      --col-price:   5.5rem;
+      --header-h: 54px;
+      --ticker-h: 28px;
+      --nav-h:    38px;
+      --fs-wordmark: 28px;
+      --fs-tab:      10px;
+      --fs-product:  16px;
+      --fs-detail:   13px;
+      --fs-price:    16px;
+      --col-metric:  3.4rem;
+      --col-price:   4.75rem;
     }
   }
 
@@ -307,11 +308,31 @@
   }
 
   .page.page-flower {
-    padding: 8px 10px 10px;
+    padding: 4px 6px 4px;
     gap: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    --fs-product: 15px;
+    --fs-price: 16px;
+    --fs-detail: 12px;
+  }
+  @media (min-width: 700px) {
+    .page.page-flower {
+      padding: 2px 4px 4px;
+      --fs-product: 16px;
+      --fs-price: 17px;
+      --fs-detail: 13px;
+      --col-metric: 3.1rem;
+      --col-price: 4.25rem;
+    }
+  }
+  @media (min-width: 1000px) {
+    .page.page-flower {
+      --fs-product: 17px;
+      --fs-price: 18px;
+      --fs-detail: 14px;
+    }
   }
   .page.page-deals {
     padding: 12px 14px 16px;
@@ -397,16 +418,19 @@
     min-width: 0;
     width: 100%;
   }
-  @media (min-width: 860px) {
+  @media (min-width: 700px) {
     .card-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .card-grid.cols-auto { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
     .card-grid .section-block.span-2 { grid-column: 1 / -1; }
   }
+  @media (min-width: 860px) {
+    .card-grid.cols-auto { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+  }
 
-  /* Flower tab: one board — compact top + tall type columns */
+  /* Flower tab: slim toolbar + corner pricing + tall columns */
   .flower-board {
     border: 1px solid var(--border-warm);
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
     background: rgba(253, 250, 246, 0.97);
     min-width: 0;
@@ -414,7 +438,76 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    position: relative;
   }
+  .flower-toolbar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 6px 5px;
+    border-bottom: 1px solid rgba(169,124,80,0.12);
+    background: rgba(253, 250, 246, 0.98);
+    min-width: 0;
+  }
+  .flower-toolbar .sort-bar {
+    padding: 0;
+    border: none;
+    flex: 1;
+    min-width: 0;
+    gap: 6px 10px;
+  }
+  .page.page-flower .sort-btn {
+    padding: 5px 8px;
+    font-size: 9px;
+  }
+  .page.page-flower .sort-label {
+    font-size: 9px;
+  }
+
+  .tier-corner {
+    flex-shrink: 0;
+    max-width: min(210px, 34vw);
+    background: rgba(245, 239, 230, 0.96);
+    border: 1px solid rgba(169,124,80,0.22);
+    border-radius: 8px;
+    padding: 5px 8px 6px;
+    box-shadow: 0 1px 6px rgba(28,28,26,0.06);
+    text-align: right;
+  }
+  .tier-corner-title {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 11px;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .tier-corner-rows {
+    display: grid;
+    gap: 1px;
+  }
+  .tier-corner-row {
+    font-size: 8px;
+    line-height: 1.3;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .tier-corner-row strong {
+    color: var(--moss);
+    font-weight: 700;
+  }
+  @media (min-width: 700px) {
+    .tier-corner { max-width: min(230px, 30vw); padding: 6px 9px 7px; }
+    .tier-corner-title { font-size: 12px; }
+    .tier-corner-row { font-size: 8.5px; }
+  }
+  @media (min-width: 1000px) {
+    .tier-corner { max-width: 240px; }
+    .tier-corner-row { font-size: 9px; }
+  }
+
   .flower-board-top {
     flex-shrink: 0;
     border-bottom: 1px solid rgba(169,124,80,0.14);
@@ -447,7 +540,7 @@
     display: flex;
     flex-direction: column;
   }
-  @media (min-width: 860px) {
+  @media (min-width: 700px) {
     .flower-board .card-grid.cols-3 > .section-block:not(:last-child) {
       border-right: 1px solid rgba(169,124,80,0.14);
     }
@@ -455,6 +548,28 @@
   .flower-board .section-label {
     border-radius: 0;
     flex-shrink: 0;
+    padding: 5px 8px;
+  }
+  .flower-board .section-block[data-accent] .brand-name {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+  }
+  .flower-board .col-head {
+    font-size: 9px;
+    padding: 4px 8px 2px;
+  }
+  .flower-board .section-products {
+    padding: 0 6px 4px;
+  }
+  .page.page-flower .product-row {
+    padding: 5px 1px;
+    min-height: 32px;
+    gap: 3px 6px;
+  }
+  @media (min-width: 700px) {
+    .flower-board .section-block[data-accent] .brand-name { font-size: 12px; }
+    .flower-board .col-head { font-size: 10px; }
+    .page.page-flower .product-row { padding: 6px 2px; min-height: 34px; }
   }
   .section-block[data-accent="sativa"] .section-label {
     background: linear-gradient(180deg, rgba(196,120,58,0.14) 0%, rgba(253,250,246,0.55) 100%);
@@ -1408,6 +1523,19 @@ function typeDotHtml(accent) {
   return `<span class="type-dot type-dot--${escAttr(accent)}" aria-hidden="true" title="${escAttr(accent)}"></span>`;
 }
 
+function renderTierCorner() {
+  return `
+    <aside class="tier-corner" aria-label="Deli flower pricing tiers">
+      <div class="tier-corner-title">Deli Flower</div>
+      <div class="tier-corner-rows">
+        <div class="tier-corner-row"><strong>$6/g</strong> $20 ⅛ · $40 ¼ · $80 ½ · $150 oz</div>
+        <div class="tier-corner-row"><strong>$9/g</strong> $25 ⅛ · $50 ¼ · $100 ½ · $180 oz</div>
+        <div class="tier-corner-row"><strong>$10/g</strong> $30 ⅛ · $60 ¼ · $115 ½ · $210 oz</div>
+        <div class="tier-corner-row"><strong>$12/g</strong> $39 ⅛ · $75 ¼ · $150 ½ · $240 oz</div>
+      </div>
+    </aside>`;
+}
+
 function renderTierBanner() {
   return `
     <section class="tier-banner" aria-label="Deli flower pricing tiers">
@@ -1640,9 +1768,9 @@ function renderFlowerPage(pageIdx, sections) {
 
   return `
     <div class="flower-board">
-      <div class="flower-board-top">
-        ${renderTierBanner()}
+      <div class="flower-toolbar">
         ${renderSortBar()}
+        ${renderTierCorner()}
       </div>
       <div class="card-grid cols-3 flower-columns">
         ${renderCard({ pageIdx, title: 'Sativa', accent: 'sativa', mode: 'flower', items: byType.sativa })}
