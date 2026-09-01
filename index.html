@@ -419,80 +419,10 @@
     flex-shrink: 0;
     border-bottom: 1px solid rgba(169,124,80,0.14);
   }
-  .tier-compact {
-    display: flex;
-    align-items: center;
-    gap: 10px 14px;
-    flex-wrap: wrap;
-    padding: 8px 12px;
+  .flower-board-top .tier-banner {
+    border: none;
+    border-radius: 0;
     background: linear-gradient(180deg, var(--cream) 0%, rgba(253,250,246,0.9) 100%);
-  }
-  .tier-compact-title {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-size: 16px;
-    white-space: nowrap;
-  }
-  .tier-compact-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 2px 12px;
-    flex: 1;
-    min-width: 0;
-    font-size: 10px;
-    line-height: 1.3;
-  }
-  @media (min-width: 900px) {
-    .tier-compact-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  }
-  .tier-compact-grid strong { color: var(--moss); }
-
-  .flower-deals-compact {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 6px 12px 8px;
-    background: rgba(237,228,216,0.35);
-    border-top: 1px solid rgba(169,124,80,0.10);
-    min-width: 0;
-  }
-  .flower-deals-compact-label {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--wood);
-    white-space: nowrap;
-    padding-top: 3px;
-  }
-  .flower-deals-compact-items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 14px;
-    flex: 1;
-    min-width: 0;
-  }
-  .flower-deal-chip {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
-    font-size: 12px;
-    min-width: 0;
-  }
-  .flower-deal-name {
-    font-weight: 400;
-    overflow-wrap: anywhere;
-  }
-  .flower-deal-meta {
-    font-size: 11px;
-    color: var(--potency);
-    white-space: nowrap;
-  }
-  .flower-deal-price {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    color: var(--wood);
-    white-space: nowrap;
   }
 
   .flower-board .sort-bar {
@@ -1434,17 +1364,17 @@ function typeDotHtml(accent) {
   return `<span class="type-dot type-dot--${escAttr(accent)}" aria-hidden="true"></span>`;
 }
 
-function renderTierCompact() {
+function renderTierBanner() {
   return `
-    <div class="tier-compact" aria-label="Deli flower pricing">
-      <div class="tier-compact-title">Deli Flower</div>
-      <div class="tier-compact-grid">
-        <span><strong>$6/g</strong> $20 ⅛ · $40 ¼ · $80 ½ · $150 oz</span>
-        <span><strong>$9/g</strong> $25 ⅛ · $50 ¼ · $100 ½ · $180 oz</span>
-        <span><strong>$10/g</strong> $30 ⅛ · $60 ¼ · $115 ½ · $210 oz</span>
-        <span><strong>$12/g</strong> $39 ⅛ · $75 ¼ · $150 ½ · $240 oz</span>
+    <section class="tier-banner" aria-label="Deli flower pricing tiers">
+      <div class="tier-title">Deli Flower</div>
+      <div class="tier-rows">
+        <div class="tier-row"><strong>$6/g</strong> $20 ⅛ · $40 ¼ · $80 ½ · $150 oz</div>
+        <div class="tier-row"><strong>$9/g</strong> $25 ⅛ · $50 ¼ · $100 ½ · $180 oz</div>
+        <div class="tier-row"><strong>$10/g</strong> $30 ⅛ · $60 ¼ · $115 ½ · $210 oz</div>
+        <div class="tier-row"><strong>$12/g</strong> $39 ⅛ · $75 ¼ · $150 ½ · $240 oz</div>
       </div>
-    </div>`;
+    </section>`;
 }
 
 function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
@@ -1569,6 +1499,13 @@ function splitFlowerSections(sections) {
   return { byType, sales };
 }
 
+function collectHouseMixRows() {
+  const sections = menuData['Pre-Rolls'] || {};
+  const houseMixKey = Object.keys(sections).find(k => /House Mix/i.test(k));
+  if (!houseMixKey) return [];
+  return withSection(houseMixKey, sections[houseMixKey]);
+}
+
 function collectSalesRows() {
   const { sales } = splitFlowerSections(menuData['Flower'] || {});
   const dealsTab = menuData['Deals'] || {};
@@ -1582,7 +1519,7 @@ function renderFlowerPage(pageIdx, sections) {
   return `
     <div class="flower-board">
       <div class="flower-board-top">
-        ${renderTierCompact()}
+        ${renderTierBanner()}
         ${renderSortBar()}
       </div>
       <div class="card-grid cols-3 flower-columns">
@@ -1594,12 +1531,25 @@ function renderFlowerPage(pageIdx, sections) {
 }
 
 function renderDealsPage(pageIdx) {
+  const houseMixRows = collectHouseMixRows();
+  const visibleHouseMix = sortRows(pageIdx, houseMixRows);
   const visibleSales = sortRows(pageIdx, collectSalesRows());
 
-  let html = `<section class="deals-section" aria-label="Deli flower pricing">
-    <div class="deals-section-head">Deli Flower Pricing</div>
-    <div class="deals-section-body">${renderTierCompact()}</div>
-  </section>`;
+  let html = '';
+
+  if (visibleHouseMix.length) {
+    const { format } = splitSectionLabel(visibleHouseMix[0].section);
+    html += renderCard({
+      pageIdx,
+      title: 'House Mix Prerolls',
+      format: format || 'Half Gram',
+      blurb: 'Deal rolls · mixed strains',
+      accent: 'house',
+      featured: true,
+      mode: 'detail',
+      items: visibleHouseMix,
+    });
+  }
 
   if (visibleSales.length) {
     html += `<section class="deals-section" aria-label="Sales and specials">
@@ -1613,6 +1563,10 @@ function renderDealsPage(pageIdx) {
     </section>`;
   }
 
+  if (!html) {
+    html = `<div class="error-state"><p><strong>No deals right now</strong>Check back soon or ask a budtender.</p></div>`;
+  }
+
   return html;
 }
 
@@ -1624,12 +1578,9 @@ function renderPreRollsPage(pageIdx, sections) {
 
   let html = renderSortBar() + `<div class="card-grid cols-auto">`;
 
-  if (houseKey || houseMixKey) {
-    const houseRows = [
-      ...(houseKey ? withSection(houseKey, sections[houseKey]) : []),
-      ...(houseMixKey ? withSection(houseMixKey, sections[houseMixKey]) : []),
-    ];
-    const { format } = splitSectionLabel(houseKey || houseMixKey);
+  if (houseKey) {
+    const houseRows = withSection(houseKey, sections[houseKey]);
+    const { format } = splitSectionLabel(houseKey);
     html += renderCard({
       pageIdx,
       title: 'House Rolls',

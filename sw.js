@@ -1,5 +1,5 @@
 /* Minimal service worker — required for Android Chrome to install as a real fullscreen app. */
-const CACHE = 'union-menu-v14';
+const CACHE = 'union-menu-v15';
 const ASSETS = [
   './',
   './index.html',
