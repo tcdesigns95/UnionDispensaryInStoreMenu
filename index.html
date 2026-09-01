@@ -471,12 +471,12 @@
 
   .type-dot {
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     flex-shrink: 0;
-    margin-top: 0.32em;
-    box-shadow: 0 0 0 1px rgba(28,28,26,0.06);
+    margin-top: 0.28em;
+    box-shadow: 0 0 0 1px rgba(28,28,26,0.08);
   }
   .type-dot--sativa { background: var(--sativa); }
   .type-dot--hybrid { background: var(--hybrid); }
@@ -1162,8 +1162,22 @@ function parseCSV(text) {
   const lines = text.trim().split('\n');
   if (lines.length < 2) { showSetupMessage('Sheet looks empty — check your published CSV.'); return; }
 
+  const header = csvSplit(lines[0]).map(h => h.trim().toLowerCase());
+  const hasTypeCol = header.includes('type');
+
   const parsed = lines.slice(1).map(line => {
     const cols = csvSplit(line);
+    if (hasTypeCol) {
+      return {
+        tab:      cols[0]?.trim() || '',
+        section:  cols[1]?.trim() || '',
+        name:     cols[2]?.trim() || '',
+        type:     typeFromText(cols[3]?.trim()) || normalizeType(cols[3]?.trim()) || null,
+        detail:   cols[4]?.trim() || '',
+        price:    cols[5]?.trim() || '',
+        inStock:  (cols[6]?.trim().toUpperCase() !== 'FALSE'),
+      };
+    }
     return {
       tab:      cols[0]?.trim() || '',
       section:  cols[1]?.trim() || '',
@@ -1366,9 +1380,16 @@ function renderSectionLabel({ title, format, blurb }) {
     </div>`;
 }
 
+function displayName(name) {
+  let s = String(name || '').trim();
+  if (!s) return s;
+  const stripped = s.replace(/\s+(?:(?:Sativa|Indica)\s+)?(?:Hybrid|Indica|Sativa|Hyrid|Hybird)\s*$/i, '').trim();
+  return stripped || s;
+}
+
 function typeDotHtml(accent) {
   if (!accent || accent === 'wood' || accent === 'house') return '';
-  return `<span class="type-dot type-dot--${escAttr(accent)}" aria-hidden="true"></span>`;
+  return `<span class="type-dot type-dot--${escAttr(accent)}" aria-hidden="true" title="${escAttr(accent)}"></span>`;
 }
 
 function renderTierBanner() {
@@ -1400,7 +1421,7 @@ function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
         <div class="oos-indicator"></div>
         <div class="product-name-wrap">
           ${typeDotHtml(rowTypeAccent(row, typeAccent))}
-          <div class="product-name">${escHtml(row.name)}</div>
+          <div class="product-name">${escHtml(displayName(row.name))}</div>
         </div>
       </div>
       <div class="product-metric">${escHtml(fmtPct(enriched.thc))}</div>
@@ -1415,7 +1436,7 @@ function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
         <div class="oos-indicator"></div>
         <div class="product-name-wrap">
           ${typeDotHtml(rowTypeAccent(row, typeAccent))}
-          <div class="product-name">${escHtml(row.name)}</div>
+          <div class="product-name">${escHtml(displayName(row.name))}</div>
         </div>
       </div>
       <div class="product-detail">${escHtml(formatPotency(row.detail))}</div>
@@ -1429,7 +1450,7 @@ function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
       <div class="product-name-wrap">
         ${typeDotHtml(rowTypeAccent(row, typeAccent))}
         <div>
-          <div class="product-name">${escHtml(row.name)}</div>
+          <div class="product-name">${escHtml(displayName(row.name))}</div>
           ${row.detail ? `<div class="product-detail">${escHtml(formatPotency(row.detail))}</div>` : ''}
         </div>
       </div>
@@ -1466,20 +1487,23 @@ function normalizeType(t) {
 }
 
 function typeFromText(text) {
-  const s = String(text || '');
+  const s = String(text || '').trim();
+  if (!s) return null;
+
   const paren = s.match(/\((Sativa|Hybrid|Indica|Hyrid|Hybird)\)/i);
   if (paren) return normalizeType(paren[1]);
 
-  const trail = s.match(/(?:^|[·—\-|/])\s*(Sativa|Hybrid|Indica|Hyrid|Hybird)\s*$/i);
-  if (trail) return normalizeType(trail[1]);
-
-  const lead = s.match(/^(Sativa|Hybrid|Indica|Hyrid|Hybird)\s*(?:[·—\-|:|/])/i);
-  if (lead) return normalizeType(lead[1]);
-
-  const word = s.match(/\b(Sativa|Hybrid|Indica|Hyrid|Hybird)\b/i);
-  if (word) return normalizeType(word[1]);
-
-  return null;
+  const types = [];
+  const re = /\b(Sativa|Hybrid|Indica|Hyrid|Hybird)\b/gi;
+  let match;
+  while ((match = re.exec(s))) {
+    const t = normalizeType(match[1]);
+    if (t) types.push(t);
+  }
+  if (!types.length) return null;
+  if (types.includes('hybrid')) return 'hybrid';
+  if (types.includes('sativa') && types.includes('indica')) return 'hybrid';
+  return types[types.length - 1];
 }
 
 function typeFromSection(sec) {
@@ -1536,7 +1560,10 @@ function typeFromRow(row) {
 }
 
 function rowTypeAccent(row, fallback) {
-  return typeFromRow(row) || fallback || null;
+  const detected = typeFromRow(row);
+  if (detected) return detected;
+  if (fallback && fallback !== 'house' && fallback !== 'wood') return fallback;
+  return null;
 }
 
 function withSection(secName, rows) {
