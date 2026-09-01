@@ -665,7 +665,11 @@
     min-width: 0;
     border-bottom: 1px solid rgba(169,124,80,0.10);
     transition: opacity 0.2s;
+    border-left: 3px solid transparent;
   }
+  .product-row[data-type="sativa"] { border-left-color: var(--sativa); }
+  .product-row[data-type="hybrid"] { border-left-color: var(--hybrid); }
+  .product-row[data-type="indica"] { border-left-color: var(--indica); }
   .product-row.cols-default {
     grid-template-columns: minmax(0, 1fr) minmax(var(--col-price), max-content);
   }
@@ -1038,6 +1042,7 @@ let SHEET_URL = DEFAULT_SHEET_URL;
 // ── STATE ──
 let menuData    = {};
 let tickerItems = [];
+let strainTypeIndex = {};
 let editMode    = false;
 let selectedRow = null;
 let selectedKey = null;
@@ -1166,6 +1171,7 @@ function parseCSV(text) {
       detail:   cols[3]?.trim() || '',
       price:    cols[4]?.trim() || '',
       inStock:  (cols[5]?.trim().toUpperCase() !== 'FALSE'),
+      type:     normalizeType(cols[6]?.trim()) || null,
     };
   });
 
@@ -1185,6 +1191,7 @@ function parseCSV(text) {
   });
 
   menuData = grouped;
+  rebuildStrainTypeIndex();
   renderAllPages();
 }
 
@@ -1377,12 +1384,18 @@ function renderTierBanner() {
     </section>`;
 }
 
+function productRowTypeAttr(row, typeAccent) {
+  const t = rowTypeAccent(row, typeAccent);
+  return t ? ` data-type="${escAttr(t)}"` : '';
+}
+
 function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
   const key = `${pageIdx}|${secName}|${row.name}`;
   const enriched = enrichRow(row);
+  const typeAttr = productRowTypeAttr(row, typeAccent);
 
   if (mode === 'flower') {
-    return `<div class="product-row cols-flower" data-key="${escAttr(key)}" onclick="rowClick(this)">
+    return `<div class="product-row cols-flower"${typeAttr} data-key="${escAttr(key)}" onclick="rowClick(this)">
       <div class="toggle-btn">
         <div class="oos-indicator"></div>
         <div class="product-name-wrap">
@@ -1397,7 +1410,7 @@ function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
   }
 
   if (mode === 'detail') {
-    return `<div class="product-row cols-detail" data-key="${escAttr(key)}" onclick="rowClick(this)">
+    return `<div class="product-row cols-detail"${typeAttr} data-key="${escAttr(key)}" onclick="rowClick(this)">
       <div class="toggle-btn">
         <div class="oos-indicator"></div>
         <div class="product-name-wrap">
@@ -1410,7 +1423,7 @@ function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
     </div>`;
   }
 
-  return `<div class="product-row cols-default" data-key="${escAttr(key)}" onclick="rowClick(this)">
+  return `<div class="product-row cols-default"${typeAttr} data-key="${escAttr(key)}" onclick="rowClick(this)">
     <div class="toggle-btn">
       <div class="oos-indicator"></div>
       <div class="product-name-wrap">
@@ -1453,16 +1466,73 @@ function normalizeType(t) {
 }
 
 function typeFromText(text) {
-  const m = String(text || '').match(/\((Sativa|Hybrid|Indica|Hyrid|Hybird)\)/i);
-  return m ? normalizeType(m[1]) : null;
+  const s = String(text || '');
+  const paren = s.match(/\((Sativa|Hybrid|Indica|Hyrid|Hybird)\)/i);
+  if (paren) return normalizeType(paren[1]);
+
+  const trail = s.match(/(?:^|[·—\-|/])\s*(Sativa|Hybrid|Indica|Hyrid|Hybird)\s*$/i);
+  if (trail) return normalizeType(trail[1]);
+
+  const lead = s.match(/^(Sativa|Hybrid|Indica|Hyrid|Hybird)\s*(?:[·—\-|:|/])/i);
+  if (lead) return normalizeType(lead[1]);
+
+  const word = s.match(/\b(Sativa|Hybrid|Indica|Hyrid|Hybird)\b/i);
+  if (word) return normalizeType(word[1]);
+
+  return null;
 }
 
 function typeFromSection(sec) {
   return typeFromText(sec);
 }
 
+function normalizeStrainKey(name) {
+  return String(name || '').trim().toLowerCase();
+}
+
+function strainLookupCandidates(name) {
+  const raw = String(name || '').trim();
+  if (!raw) return [];
+  const candidates = [raw];
+  raw.split(/\s*[—–]\s+/).forEach(part => {
+    if (part.trim()) candidates.push(part.trim());
+  });
+  raw.split(/\s*[\/|,]\s*/).forEach(part => {
+    if (part.trim()) candidates.push(part.trim());
+  });
+  return [...new Set(candidates)];
+}
+
+function strainTypeFromName(name) {
+  const types = strainLookupCandidates(name)
+    .map(c => strainTypeIndex[normalizeStrainKey(c)])
+    .filter(Boolean);
+  const unique = [...new Set(types)];
+  if (unique.length === 1) return unique[0];
+  if (unique.length > 1) return 'hybrid';
+  return null;
+}
+
+function rebuildStrainTypeIndex() {
+  strainTypeIndex = {};
+  const flower = menuData['Flower'] || {};
+  for (const [secName, rows] of Object.entries(flower)) {
+    const sectionType = typeFromSection(secName);
+    if (!sectionType) continue;
+    for (const row of rows) {
+      if (!row.name) continue;
+      const key = normalizeStrainKey(row.name);
+      if (key && !strainTypeIndex[key]) strainTypeIndex[key] = sectionType;
+    }
+  }
+}
+
 function typeFromRow(row) {
-  return typeFromSection(row.section) || typeFromText(row.name) || typeFromText(row.detail);
+  return row.type
+    || typeFromSection(row.section)
+    || typeFromText(row.name)
+    || typeFromText(row.detail)
+    || strainTypeFromName(row.name);
 }
 
 function rowTypeAccent(row, fallback) {
