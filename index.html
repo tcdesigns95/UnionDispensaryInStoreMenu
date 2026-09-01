@@ -1623,9 +1623,9 @@ function splitFlowerSections(sections) {
 
 function collectHouseMixRows() {
   const sections = menuData['Pre-Rolls'] || {};
-  const houseMixKey = Object.keys(sections).find(k => /House Mix/i.test(k));
-  if (!houseMixKey) return [];
-  return withSection(houseMixKey, sections[houseMixKey]);
+  return Object.entries(sections).flatMap(([secName, rows]) =>
+    withSection(secName, rows).filter(isHouseMixRow)
+  );
 }
 
 function collectSalesRows() {
