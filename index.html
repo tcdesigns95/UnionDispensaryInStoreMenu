@@ -35,17 +35,19 @@
     --nav-h:     52px;
     --total-top: calc(var(--header-h) + var(--ticker-h) + var(--nav-h));
 
-    /* Type scale — bumped for arm's-length tablet viewing.
-       Adjusted again at the tablet breakpoint below. */
+    /* Type scale — unified for in-store tablet reading */
     --fs-wordmark:    32px;
     --fs-eyebrow:     9px;
-    --fs-ticker:      11px;
-    --fs-tab:         11px;
+    --fs-ticker:      10px;
+    --fs-tab:         10px;
+    --fs-label:       10px;   /* tabs, column heads, sort, uppercase labels */
     --fs-section:     10px;   /* format eyebrow above brand */
-    --fs-brand:       18px;   /* brand / product-line title */
-    --fs-product:     13px;   /* strain name */
-    --fs-detail:      11px;
-    --fs-price:       13px;
+    --fs-brand:       16px;   /* card / section titles */
+    --fs-product:     14px;   /* strain & item names */
+    --fs-meta:        13px;   /* THC, potency, blurbs */
+    --fs-detail:      var(--fs-meta);
+    --fs-price:       14px;   /* prices — matched to product */
+    --fs-micro:       9px;    /* tier corner fine print */
     --tap-min:        40px;
     --page-pad:       16px;
     --col-metric:     3.4rem;
@@ -61,18 +63,20 @@
       --header-h: 50px;
       --ticker-h: 26px;
       --nav-h:    36px;
-      --fs-wordmark: 24px;
-      --fs-eyebrow:  8px;
-      --fs-ticker:   9px;
-      --fs-tab:      9px;
-      --fs-section:  9px;
-      --fs-brand:    18px;
-      --fs-product:  15px;
-      --fs-detail:   12px;
-      --fs-price:    15px;
+      --fs-wordmark: 26px;
+      --fs-eyebrow:  9px;
+      --fs-ticker:   10px;
+      --fs-tab:      10px;
+      --fs-label:    11px;
+      --fs-section:  10px;
+      --fs-brand:    17px;
+      --fs-product:  16px;
+      --fs-meta:     15px;
+      --fs-price:    16px;
+      --fs-micro:    10px;
       --page-pad:    12px;
-      --col-metric:  3.25rem;
-      --col-price:   4.5rem;
+      --col-metric:  3.3rem;
+      --col-price:   4.6rem;
       --tap-min:     36px;
     }
     .header { padding: 0 14px; }
@@ -89,12 +93,15 @@
       --ticker-h: 28px;
       --nav-h:    38px;
       --fs-wordmark: 28px;
-      --fs-tab:      10px;
-      --fs-product:  16px;
-      --fs-detail:   13px;
-      --fs-price:    16px;
-      --col-metric:  3.4rem;
-      --col-price:   4.75rem;
+      --fs-tab:      11px;
+      --fs-label:    11px;
+      --fs-brand:    18px;
+      --fs-product:  17px;
+      --fs-meta:     16px;
+      --fs-price:    17px;
+      --fs-micro:    10px;
+      --col-metric:  3.5rem;
+      --col-price:   4.85rem;
     }
   }
 
@@ -313,25 +320,12 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    --fs-product: 15px;
-    --fs-price: 16px;
-    --fs-detail: 12px;
   }
   @media (min-width: 700px) {
     .page.page-flower {
       padding: 2px 4px 4px;
-      --fs-product: 16px;
-      --fs-price: 17px;
-      --fs-detail: 13px;
-      --col-metric: 3.1rem;
-      --col-price: 4.25rem;
-    }
-  }
-  @media (min-width: 1000px) {
-    .page.page-flower {
-      --fs-product: 17px;
-      --fs-price: 18px;
-      --fs-detail: 14px;
+      --col-metric: 3.2rem;
+      --col-price: 4.4rem;
     }
   }
   .page.page-deals {
@@ -364,7 +358,7 @@
     font-family: 'Lato', sans-serif;
     font-style: normal;
     font-weight: 700;
-    font-size: 11px;
+    font-size: var(--fs-label);
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--wood);
@@ -376,7 +370,7 @@
     justify-content: center;
     gap: 4px 6px;
     flex-wrap: wrap;
-    font-size: 11px;
+    font-size: var(--fs-meta);
     line-height: 1.35;
     text-align: center;
   }
@@ -391,7 +385,7 @@
   }
   .sort-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .sort-label {
-    font-size: 10px;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -401,7 +395,7 @@
     border: 1px solid rgba(28,28,26,0.12);
     background: #f4efe6;
     color: var(--ink);
-    font: 700 10px/1 Lato, sans-serif;
+    font: 700 var(--fs-label)/1 Lato, sans-serif;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     padding: 7px 10px;
@@ -462,12 +456,9 @@
     min-width: 0;
     gap: 6px 10px;
   }
-  .page.page-flower .sort-btn {
-    padding: 5px 8px;
-    font-size: 9px;
-  }
+  .page.page-flower .sort-btn,
   .page.page-flower .sort-label {
-    font-size: 9px;
+    font-size: var(--fs-label);
   }
 
   .tier-corner {
@@ -484,7 +475,7 @@
     font-family: 'Lato', sans-serif;
     font-style: normal;
     font-weight: 700;
-    font-size: 9px;
+    font-size: var(--fs-label);
     letter-spacing: 0.12em;
     text-transform: uppercase;
     line-height: 1.1;
@@ -496,7 +487,7 @@
     gap: 1px;
   }
   .tier-corner-row {
-    font-size: 8px;
+    font-size: var(--fs-micro);
     line-height: 1.3;
     color: var(--ink);
     white-space: nowrap;
@@ -507,12 +498,9 @@
   }
   @media (min-width: 700px) {
     .tier-corner { max-width: min(230px, 30vw); padding: 6px 9px 7px; }
-    .tier-corner-title { font-size: 12px; }
-    .tier-corner-row { font-size: 8.5px; }
   }
   @media (min-width: 1000px) {
     .tier-corner { max-width: 240px; }
-    .tier-corner-row { font-size: 9px; }
   }
 
   .flower-board-top {
@@ -558,11 +546,11 @@
     padding: 5px 8px;
   }
   .flower-board .section-block[data-accent] .brand-name {
-    font-size: 11px;
+    font-size: var(--fs-label);
     letter-spacing: 0.14em;
   }
   .flower-board .col-head {
-    font-size: 9px;
+    font-size: var(--fs-label);
     padding: 4px 8px 2px;
   }
   .flower-board .section-products {
@@ -574,8 +562,6 @@
     gap: 3px 6px;
   }
   @media (min-width: 700px) {
-    .flower-board .section-block[data-accent] .brand-name { font-size: 12px; }
-    .flower-board .col-head { font-size: 10px; }
     .page.page-flower .product-row { padding: 6px 2px; min-height: 34px; }
   }
   .section-block[data-accent="sativa"] .section-label {
@@ -597,8 +583,11 @@
     height: 9px;
     border-radius: 50%;
     flex-shrink: 0;
-    margin-top: 0.28em;
+    margin-top: 0.35em;
     box-shadow: 0 0 0 1px rgba(28,28,26,0.08);
+  }
+  @media (min-width: 700px) {
+    .type-dot { width: 10px; height: 10px; }
   }
   .type-dot--sativa { background: var(--sativa); }
   .type-dot--hybrid { background: var(--hybrid); }
@@ -620,7 +609,7 @@
   }
   .deals-section-head {
     padding: 10px 14px;
-    font-size: 11px;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -732,7 +721,7 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    font-size: 12px;
+    font-size: var(--fs-label);
   }
   .section-block[data-accent="sativa"] .brand-name { color: var(--sativa); }
   .section-block[data-accent="hybrid"] .brand-name { color: var(--hybrid); }
@@ -753,7 +742,7 @@
     display: grid;
     gap: 6px 8px;
     padding: 8px 12px 4px;
-    font-size: 9px;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -813,7 +802,7 @@
   }
 
   .product-detail {
-    font-size: var(--fs-detail);
+    font-size: var(--fs-meta);
     font-weight: 400;
     color: var(--potency);
     margin-top: 2px;
@@ -827,7 +816,7 @@
     text-align: right;
   }
   .product-metric {
-    font-size: var(--fs-detail);
+    font-size: var(--fs-meta);
     font-weight: 400;
     color: var(--potency);
     text-align: right;
