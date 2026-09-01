@@ -287,13 +287,13 @@
 
   .pages-wrap {
     display: flex;
-    width: 500%;
+    width: 600%;
     height: 100%;
     transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .page {
-    width: 20%;
+    width: 16.6667%;
     height: 100%;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -304,6 +304,18 @@
 
   @media (min-width: 700px) {
     .page { padding: 28px 32px 56px; }
+  }
+
+  .page.page-flower {
+    padding: 8px 10px 10px;
+    gap: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .page.page-deals {
+    padding: 12px 14px 16px;
+    gap: 12px;
   }
 
   /* ── PAGE LAYOUT (card grid) ── */
@@ -391,7 +403,7 @@
     .card-grid .section-block.span-2 { grid-column: 1 / -1; }
   }
 
-  /* Flower tab: one board — type columns + packaged deals always visible */
+  /* Flower tab: one board — compact top + tall type columns */
   .flower-board {
     border: 1px solid var(--border-warm);
     border-radius: 12px;
@@ -403,7 +415,92 @@
     display: flex;
     flex-direction: column;
   }
-  .flower-board .card-grid {
+  .flower-board-top {
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(169,124,80,0.14);
+  }
+  .tier-compact {
+    display: flex;
+    align-items: center;
+    gap: 10px 14px;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    background: linear-gradient(180deg, var(--cream) 0%, rgba(253,250,246,0.9) 100%);
+  }
+  .tier-compact-title {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 16px;
+    white-space: nowrap;
+  }
+  .tier-compact-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px 12px;
+    flex: 1;
+    min-width: 0;
+    font-size: 10px;
+    line-height: 1.3;
+  }
+  @media (min-width: 900px) {
+    .tier-compact-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  .tier-compact-grid strong { color: var(--moss); }
+
+  .flower-deals-compact {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 12px 8px;
+    background: rgba(237,228,216,0.35);
+    border-top: 1px solid rgba(169,124,80,0.10);
+    min-width: 0;
+  }
+  .flower-deals-compact-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--wood);
+    white-space: nowrap;
+    padding-top: 3px;
+  }
+  .flower-deals-compact-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    flex: 1;
+    min-width: 0;
+  }
+  .flower-deal-chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 12px;
+    min-width: 0;
+  }
+  .flower-deal-name {
+    font-weight: 400;
+    overflow-wrap: anywhere;
+  }
+  .flower-deal-meta {
+    font-size: 11px;
+    color: var(--potency);
+    white-space: nowrap;
+  }
+  .flower-deal-price {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    color: var(--wood);
+    white-space: nowrap;
+  }
+
+  .flower-board .sort-bar {
+    padding: 6px 12px 8px;
+    border-top: 1px solid rgba(169,124,80,0.08);
+  }
+
+  .flower-board .card-grid.flower-columns {
     gap: 0;
     flex: 1;
     min-height: 0;
@@ -415,7 +512,10 @@
     background: transparent;
     max-height: none;
     height: 100%;
+    min-height: 0;
     box-shadow: none;
+    display: flex;
+    flex-direction: column;
   }
   @media (min-width: 860px) {
     .flower-board .card-grid.cols-3 > .section-block:not(:last-child) {
@@ -424,43 +524,76 @@
   }
   .flower-board .section-label {
     border-radius: 0;
-  }
-  .flower-deals {
-    border-bottom: 1px solid rgba(169,124,80,0.18);
-    background: linear-gradient(180deg, var(--linen) 0%, rgba(253,250,246,0.98) 100%);
-    padding: 0 0 6px;
-    min-width: 0;
     flex-shrink: 0;
-    order: -1;
   }
-  .flower-deals-head {
+  .section-block[data-accent="sativa"] .section-label {
+    background: linear-gradient(180deg, rgba(196,120,58,0.14) 0%, rgba(253,250,246,0.55) 100%);
+    border-left-width: 5px;
+  }
+  .section-block[data-accent="hybrid"] .section-label {
+    background: linear-gradient(180deg, rgba(107,143,94,0.14) 0%, rgba(253,250,246,0.55) 100%);
+    border-left-width: 5px;
+  }
+  .section-block[data-accent="indica"] .section-label {
+    background: linear-gradient(180deg, rgba(74,111,165,0.14) 0%, rgba(253,250,246,0.55) 100%);
+    border-left-width: 5px;
+  }
+
+  .type-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 0.32em;
+    box-shadow: 0 0 0 1px rgba(28,28,26,0.06);
+  }
+  .type-dot--sativa { background: var(--sativa); }
+  .type-dot--hybrid { background: var(--hybrid); }
+  .type-dot--indica { background: var(--indica); }
+  .type-dot--neutral { background: var(--wood); }
+  .product-name-wrap {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px 8px;
-    border-left: 4px solid var(--wood);
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
   }
-  .flower-deals-title {
+
+  /* Deals front page */
+  .deals-hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .deal-card {
+    background: var(--ink);
+    color: #f3ebe0;
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.35;
+    text-transform: uppercase;
+  }
+  .deals-section {
+    border: 1px solid var(--border-warm);
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(253, 250, 246, 0.97);
+  }
+  .deals-section-head {
+    padding: 10px 14px;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--wood);
+    background: var(--linen);
+    border-bottom: 1px solid rgba(169,124,80,0.14);
   }
-  .flower-deals .col-head {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-  .flower-deals-list {
-    padding: 0 12px 4px;
-    min-width: 0;
-    max-height: min(180px, 24vh);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .flower-deals .product-row {
-    padding-left: 2px;
-    padding-right: 2px;
+  .deals-section-body {
+    padding: 8px 12px 10px;
   }
 
   /* Shared row templates — keep header + rows in lockstep */
@@ -930,11 +1063,12 @@
 
 <!-- ── TAB NAV ── -->
 <nav class="tab-nav" id="tabNav">
-  <button class="tab-btn active" onclick="switchTab(0)">Pre-Rolls</button>
-  <button class="tab-btn" onclick="switchTab(1)">Packs</button>
-  <button class="tab-btn" onclick="switchTab(2)">Flower</button>
-  <button class="tab-btn" onclick="switchTab(3)">Vapes</button>
-  <button class="tab-btn" onclick="switchTab(4)">Dabs &amp; More</button>
+  <button class="tab-btn active" onclick="switchTab(0)">Deals</button>
+  <button class="tab-btn" onclick="switchTab(1)">Pre-Rolls</button>
+  <button class="tab-btn" onclick="switchTab(2)">Packs</button>
+  <button class="tab-btn" onclick="switchTab(3)">Flower</button>
+  <button class="tab-btn" onclick="switchTab(4)">Vapes</button>
+  <button class="tab-btn" onclick="switchTab(5)">Dabs &amp; More</button>
 </nav>
 <!-- ── PAGES ── -->
 <div class="content-area">
@@ -944,6 +1078,7 @@
     <div class="page" id="page2"></div>
     <div class="page" id="page3"></div>
     <div class="page" id="page4"></div>
+    <div class="page" id="page5"></div>
   </div>
 </div>
 
@@ -998,8 +1133,9 @@ let sortDir     = 'desc';
 const stockOverrides = {}; // { "tab|section|name": true/false }
 
 // ── TAB MAPPING ──
-const TAB_NAMES = ['Pre-Rolls', 'Pre-Roll Packs', 'Flower', 'Vapes', 'Dabs & Tinctures'];
-const PAGE_COUNT = 5;
+const TAB_NAMES = ['Deals', 'Pre-Rolls', 'Pre-Roll Packs', 'Flower', 'Vapes', 'Dabs & Tinctures'];
+const PAGE_COUNT = 6;
+const PAGE_STEP = 100 / PAGE_COUNT;
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
@@ -1163,7 +1299,7 @@ function buildTicker() {
 // ── RENDER ──
 function renderAllPages() {
   TAB_NAMES.forEach((tabName, i) => {
-    renderPage(i, menuData[tabName] || {});
+    renderPage(i, tabName === 'Deals' ? null : (menuData[tabName] || {}));
   });
 }
 
@@ -1309,7 +1445,45 @@ function renderSectionLabel({ title, format, blurb }) {
     </div>`;
 }
 
-function renderProductRow(pageIdx, secName, row, mode) {
+function typeDotHtml(accent) {
+  if (!accent || accent === 'wood' || accent === 'house') return '';
+  return `<span class="type-dot type-dot--${escAttr(accent)}" aria-hidden="true"></span>`;
+}
+
+function renderTierCompact() {
+  return `
+    <div class="tier-compact" aria-label="Deli flower pricing">
+      <div class="tier-compact-title">Deli Flower</div>
+      <div class="tier-compact-grid">
+        <span><strong>$6/g</strong> $20 ⅛ · $40 ¼ · $80 ½ · $150 oz</span>
+        <span><strong>$9/g</strong> $25 ⅛ · $50 ¼ · $100 ½ · $180 oz</span>
+        <span><strong>$10/g</strong> $30 ⅛ · $60 ¼ · $115 ½ · $210 oz</span>
+        <span><strong>$12/g</strong> $39 ⅛ · $75 ¼ · $150 ½ · $240 oz</span>
+      </div>
+    </div>`;
+}
+
+function renderCompactDeals(pageIdx, dealRows, title) {
+  const visible = sortRows(pageIdx, dealRows);
+  if (!visible.length) return '';
+  return `
+    <div class="flower-deals-compact" aria-label="${escAttr(title)}">
+      <span class="flower-deals-compact-label">${escHtml(title)}</span>
+      <div class="flower-deals-compact-items">
+        ${visible.map(row => {
+          const enriched = enrichRow(row);
+          return `<div class="flower-deal-chip">
+            <span class="type-dot type-dot--neutral" aria-hidden="true"></span>
+            <span class="flower-deal-name">${escHtml(row.name)}</span>
+            <span class="flower-deal-meta">${escHtml(fmtPct(enriched.thc))}</span>
+            <span class="flower-deal-price">${escHtml(row.price || '—')}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
   const key = `${pageIdx}|${secName}|${row.name}`;
   const enriched = enrichRow(row);
 
@@ -1317,7 +1491,10 @@ function renderProductRow(pageIdx, secName, row, mode) {
     return `<div class="product-row cols-flower" data-key="${escAttr(key)}" onclick="rowClick(this)">
       <div class="toggle-btn">
         <div class="oos-indicator"></div>
-        <div class="product-name">${escHtml(row.name)}</div>
+        <div class="product-name-wrap">
+          ${typeDotHtml(typeAccent)}
+          <div class="product-name">${escHtml(row.name)}</div>
+        </div>
       </div>
       <div class="product-metric">${escHtml(fmtPct(enriched.thc))}</div>
       <div class="product-metric">${escHtml(fmtPct(enriched.cbd))}</div>
@@ -1357,7 +1534,7 @@ function renderCard({ pageIdx, title, format, blurb, accent, featured, span, mod
   const visible = sortRows(pageIdx, items);
   if (!visible.length) return '';
   const rowsHtml = visible.map(row =>
-    renderProductRow(pageIdx, row.section || title, row, mode || 'default')
+    renderProductRow(pageIdx, row.section || title, row, mode || 'default', accent)
   ).join('');
   return `<div class="section-block ${featured ? 'featured' : ''} ${span || ''}" data-accent="${escAttr(accent || 'wood')}">
     ${renderSectionLabel({ title, format, blurb })}
@@ -1379,61 +1556,84 @@ function withSection(secName, rows) {
   return rows.map(r => ({ ...r, section: r.section || secName }));
 }
 
-function renderFlowerPage(pageIdx, sections) {
+function splitFlowerSections(sections) {
   const byType = { sativa: [], hybrid: [], indica: [] };
   const other = [];
-  for (const [secName, rows] of Object.entries(sections)) {
+  for (const [secName, rows] of Object.entries(sections || {})) {
     const t = typeFromSection(secName);
     const tagged = withSection(secName, rows);
-    // Fold all typed deli flower (including Sugartop) into Sativa / Hybrid / Indica.
     if (t && /Deli/i.test(secName)) {
       byType[t].push(...tagged);
     } else {
       other.push({ secName, rows: tagged });
     }
   }
+  return { byType, other };
+}
 
-  let html = `
-    <section class="tier-banner" aria-label="Deli flower pricing tiers">
-      <div class="tier-title">Deli Flower</div>
-      <div class="tier-rows">
-        <div class="tier-row"><strong>$6/g</strong> $20 ⅛ · $40 ¼ · $80 ½ · $150 oz</div>
-        <div class="tier-row"><strong>$9/g</strong> $25 ⅛ · $50 ¼ · $100 ½ · $180 oz</div>
-        <div class="tier-row"><strong>$10/g</strong> $30 ⅛ · $60 ¼ · $115 ½ · $210 oz</div>
-        <div class="tier-row"><strong>$12/g</strong> $39 ⅛ · $75 ¼ · $150 ½ · $240 oz</div>
-      </div>
-    </section>
-    ${renderSortBar()}
+function packagedDealRows(sections) {
+  const { other } = splitFlowerSections(sections);
+  return other.flatMap(({ secName, rows }) => withSection(secName, rows));
+}
+
+function packagedDealTitle(sections) {
+  const { other } = splitFlowerSections(sections);
+  if (other.length === 1) {
+    return splitSectionLabel(other[0].secName).brand || other[0].secName;
+  }
+  return 'Packaged Deals';
+}
+
+function renderFlowerPage(pageIdx, sections) {
+  const { byType, other } = splitFlowerSections(sections);
+  const dealRows = other.flatMap(({ secName, rows }) => withSection(secName, rows));
+  const dealsTitle = packagedDealTitle(sections);
+
+  return `
     <div class="flower-board">
-      <div class="card-grid cols-3">
+      <div class="flower-board-top">
+        ${renderTierCompact()}
+        ${renderCompactDeals(pageIdx, dealRows, dealsTitle)}
+        ${renderSortBar()}
+      </div>
+      <div class="card-grid cols-3 flower-columns">
         ${renderCard({ pageIdx, title: 'Sativa', accent: 'sativa', mode: 'flower', items: byType.sativa })}
         ${renderCard({ pageIdx, title: 'Hybrid', accent: 'hybrid', mode: 'flower', items: byType.hybrid })}
         ${renderCard({ pageIdx, title: 'Indica', accent: 'indica', mode: 'flower', items: byType.indica })}
-      </div>`;
+      </div>
+    </div>`;
+}
 
-  if (other.length) {
-    const dealRows = other.flatMap(({ secName, rows }) => withSection(secName, rows));
-    const visibleDeals = sortRows(pageIdx, dealRows);
-    if (visibleDeals.length) {
-    const title = other.length === 1
-      ? (splitSectionLabel(other[0].secName).brand || other[0].secName)
-      : 'Packaged & Specialty';
-    html += `
-      <section class="flower-deals" aria-label="${escAttr(title)}">
-        <div class="flower-deals-head">
-          <div class="flower-deals-title">${escHtml(title)}</div>
-        </div>
+function renderDealsPage(pageIdx) {
+  const flowerSections = menuData['Flower'] || {};
+  const dealRows = packagedDealRows(flowerSections);
+  const dealsTitle = packagedDealTitle(flowerSections);
+  const visibleDeals = sortRows(pageIdx, dealRows);
+
+  let html = '';
+  if (tickerItems.length) {
+    html += `<section class="deals-hero" aria-label="Today's deals">
+      ${tickerItems.map(t => `<div class="deal-card">${escHtml(t)}</div>`).join('')}
+    </section>`;
+  }
+
+  html += `<section class="deals-section" aria-label="Deli flower pricing">
+    <div class="deals-section-head">Deli Flower Pricing</div>
+    <div class="deals-section-body">${renderTierCompact()}</div>
+  </section>`;
+
+  if (visibleDeals.length) {
+    html += `<section class="deals-section" aria-label="${escAttr(dealsTitle)}">
+      <div class="deals-section-head">${escHtml(dealsTitle)}</div>
+      <div class="deals-section-body">
         <div class="col-head cols-flower">
           <span>Strain</span><span>THC</span><span>CBD</span><span>Price</span>
         </div>
-        <div class="flower-deals-list">
-          ${visibleDeals.map(row => renderProductRow(pageIdx, row.section, row, 'flower')).join('')}
-        </div>
-      </section>`;
-    }
+        ${visibleDeals.map(row => renderProductRow(pageIdx, row.section, row, 'flower', 'neutral')).join('')}
+      </div>
+    </section>`;
   }
 
-  html += `</div>`;
   return html;
 }
 
@@ -1500,11 +1700,20 @@ function renderBrandCardsPage(pageIdx, sections) {
 
 function renderPage(pageIdx, sections) {
   const page = document.getElementById('page' + pageIdx);
+  const tabName = TAB_NAMES[pageIdx];
+  page.classList.toggle('page-flower', tabName === 'Flower');
+  page.classList.toggle('page-deals', tabName === 'Deals');
+
+  if (tabName === 'Deals') {
+    page.innerHTML = renderDealsPage(pageIdx);
+    page.scrollTop = 0;
+    return;
+  }
+
   if (!sections || !Object.keys(sections).length) {
     page.innerHTML = `<div class="error-state"><p><strong>No items found</strong>Update your Google Sheet and refresh to see products.</p></div>`;
     return;
   }
-  const tabName = TAB_NAMES[pageIdx];
   if (tabName === 'Flower') page.innerHTML = renderFlowerPage(pageIdx, sections);
   else if (tabName === 'Pre-Rolls') page.innerHTML = renderPreRollsPage(pageIdx, sections);
   else page.innerHTML = renderBrandCardsPage(pageIdx, sections);
@@ -1526,7 +1735,7 @@ function showSetupMessage(customMsg) {
 function switchTab(idx) {
   idx = Math.max(0, Math.min(PAGE_COUNT - 1, idx));
   currentTab = idx;
-  document.getElementById('pagesWrap').style.transform = `translateX(-${idx * 20}%)`;
+  document.getElementById('pagesWrap').style.transform = `translateX(-${idx * PAGE_STEP}%)`;
   document.querySelectorAll('.tab-btn').forEach((btn, i) => {
     btn.classList.toggle('active', i === idx);
   });
@@ -1574,8 +1783,8 @@ function setupSwipe() {
     if ((currentTab === 0 && deltaX > 0) || (currentTab === PAGE_COUNT - 1 && deltaX < 0)) {
       resisted = deltaX * 0.3;
     }
-    const basePct = -(currentTab * 20);
-    const dragPct = (resisted / widthPx) * 20;
+    const basePct = -(currentTab * PAGE_STEP);
+    const dragPct = (resisted / widthPx) * PAGE_STEP;
     area.style.transform = `translateX(${basePct + dragPct}%)`;
   }, { passive: true });
 
