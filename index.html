@@ -560,22 +560,6 @@
   }
 
   /* Deals front page */
-  .deals-hero {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 10px;
-  }
-  .deal-card {
-    background: var(--ink);
-    color: #f3ebe0;
-    border-radius: 10px;
-    padding: 16px 18px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    line-height: 1.35;
-    text-transform: uppercase;
-  }
   .deals-section {
     border: 1px solid var(--border-warm);
     border-radius: 12px;
@@ -1463,26 +1447,6 @@ function renderTierCompact() {
     </div>`;
 }
 
-function renderCompactDeals(pageIdx, dealRows, title) {
-  const visible = sortRows(pageIdx, dealRows);
-  if (!visible.length) return '';
-  return `
-    <div class="flower-deals-compact" aria-label="${escAttr(title)}">
-      <span class="flower-deals-compact-label">${escHtml(title)}</span>
-      <div class="flower-deals-compact-items">
-        ${visible.map(row => {
-          const enriched = enrichRow(row);
-          return `<div class="flower-deal-chip">
-            <span class="type-dot type-dot--neutral" aria-hidden="true"></span>
-            <span class="flower-deal-name">${escHtml(row.name)}</span>
-            <span class="flower-deal-meta">${escHtml(fmtPct(enriched.thc))}</span>
-            <span class="flower-deal-price">${escHtml(row.price || '—')}</span>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
-}
-
 function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
   const key = `${pageIdx}|${secName}|${row.name}`;
   const enriched = enrichRow(row);
@@ -1492,7 +1456,7 @@ function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
       <div class="toggle-btn">
         <div class="oos-indicator"></div>
         <div class="product-name-wrap">
-          ${typeDotHtml(typeAccent)}
+          ${typeDotHtml(rowTypeAccent(row, typeAccent))}
           <div class="product-name">${escHtml(row.name)}</div>
         </div>
       </div>
@@ -1506,7 +1470,10 @@ function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
     return `<div class="product-row cols-detail" data-key="${escAttr(key)}" onclick="rowClick(this)">
       <div class="toggle-btn">
         <div class="oos-indicator"></div>
-        <div class="product-name">${escHtml(row.name)}</div>
+        <div class="product-name-wrap">
+          ${typeDotHtml(rowTypeAccent(row, typeAccent))}
+          <div class="product-name">${escHtml(row.name)}</div>
+        </div>
       </div>
       <div class="product-detail">${escHtml(formatPotency(row.detail))}</div>
       <div class="product-price">${escHtml(row.price || '—')}</div>
@@ -1516,9 +1483,12 @@ function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
   return `<div class="product-row cols-default" data-key="${escAttr(key)}" onclick="rowClick(this)">
     <div class="toggle-btn">
       <div class="oos-indicator"></div>
-      <div>
-        <div class="product-name">${escHtml(row.name)}</div>
-        ${row.detail ? `<div class="product-detail">${escHtml(formatPotency(row.detail))}</div>` : ''}
+      <div class="product-name-wrap">
+        ${typeDotHtml(rowTypeAccent(row, typeAccent))}
+        <div>
+          <div class="product-name">${escHtml(row.name)}</div>
+          ${row.detail ? `<div class="product-detail">${escHtml(formatPotency(row.detail))}</div>` : ''}
+        </div>
       </div>
     </div>
     <div class="product-price">${escHtml(row.price)}</div>
@@ -1536,20 +1506,37 @@ function renderCard({ pageIdx, title, format, blurb, accent, featured, span, mod
   const rowsHtml = visible.map(row =>
     renderProductRow(pageIdx, row.section || title, row, mode || 'default', accent)
   ).join('');
-  return `<div class="section-block ${featured ? 'featured' : ''} ${span || ''}" data-accent="${escAttr(accent || 'wood')}">
+  const cardAccent = accent || typeFromSection(title) || null;
+  return `<div class="section-block ${featured ? 'featured' : ''} ${span || ''}" data-accent="${escAttr(cardAccent || 'wood')}">
     ${renderSectionLabel({ title, format, blurb })}
     ${colHead}
     <div class="section-products">${rowsHtml}</div>
   </div>`;
 }
 
+function normalizeType(t) {
+  if (!t) return null;
+  const s = String(t).toLowerCase();
+  if (s === 'hyrid' || s === 'hybird') return 'hybrid';
+  if (s === 'sativa' || s === 'hybrid' || s === 'indica') return s;
+  return null;
+}
+
+function typeFromText(text) {
+  const m = String(text || '').match(/\((Sativa|Hybrid|Indica|Hyrid|Hybird)\)/i);
+  return m ? normalizeType(m[1]) : null;
+}
+
 function typeFromSection(sec) {
-  const m = String(sec).match(/\((Sativa|Hybrid|Indica|Hyrid|Hybird)\)/i);
-  if (!m) return null;
-  const t = m[1].toLowerCase();
-  // Common sheet typos for Hybrid
-  if (t === 'hyrid' || t === 'hybird') return 'hybrid';
-  return t;
+  return typeFromText(sec);
+}
+
+function typeFromRow(row) {
+  return typeFromSection(row.section) || typeFromText(row.name) || typeFromText(row.detail);
+}
+
+function rowTypeAccent(row, fallback) {
+  return typeFromRow(row) || fallback || null;
 }
 
 function withSection(secName, rows) {
@@ -1558,42 +1545,44 @@ function withSection(secName, rows) {
 
 function splitFlowerSections(sections) {
   const byType = { sativa: [], hybrid: [], indica: [] };
-  const other = [];
+  const sales = [];
   for (const [secName, rows] of Object.entries(sections || {})) {
-    const t = typeFromSection(secName);
     const tagged = withSection(secName, rows);
-    if (t && /Deli/i.test(secName)) {
-      byType[t].push(...tagged);
-    } else {
-      other.push({ secName, rows: tagged });
+    const sectionType = typeFromSection(secName);
+    const isDeli = /Deli/i.test(secName);
+    const isPackaged = /Packaged|Specialty|Deal/i.test(secName);
+
+    if (isDeli && sectionType) {
+      byType[sectionType].push(...tagged);
+      continue;
+    }
+
+    for (const row of tagged) {
+      const rowType = typeFromRow(row);
+      if (rowType) {
+        byType[rowType].push(row);
+      } else if (isPackaged || isDeli) {
+        sales.push(row);
+      }
     }
   }
-  return { byType, other };
+  return { byType, sales };
 }
 
-function packagedDealRows(sections) {
-  const { other } = splitFlowerSections(sections);
-  return other.flatMap(({ secName, rows }) => withSection(secName, rows));
-}
-
-function packagedDealTitle(sections) {
-  const { other } = splitFlowerSections(sections);
-  if (other.length === 1) {
-    return splitSectionLabel(other[0].secName).brand || other[0].secName;
-  }
-  return 'Packaged Deals';
+function collectSalesRows() {
+  const { sales } = splitFlowerSections(menuData['Flower'] || {});
+  const dealsTab = menuData['Deals'] || {};
+  const dealsTabRows = Object.entries(dealsTab).flatMap(([secName, rows]) => withSection(secName, rows));
+  return [...sales, ...dealsTabRows];
 }
 
 function renderFlowerPage(pageIdx, sections) {
-  const { byType, other } = splitFlowerSections(sections);
-  const dealRows = other.flatMap(({ secName, rows }) => withSection(secName, rows));
-  const dealsTitle = packagedDealTitle(sections);
+  const { byType } = splitFlowerSections(sections);
 
   return `
     <div class="flower-board">
       <div class="flower-board-top">
         ${renderTierCompact()}
-        ${renderCompactDeals(pageIdx, dealRows, dealsTitle)}
         ${renderSortBar()}
       </div>
       <div class="card-grid cols-3 flower-columns">
@@ -1605,31 +1594,21 @@ function renderFlowerPage(pageIdx, sections) {
 }
 
 function renderDealsPage(pageIdx) {
-  const flowerSections = menuData['Flower'] || {};
-  const dealRows = packagedDealRows(flowerSections);
-  const dealsTitle = packagedDealTitle(flowerSections);
-  const visibleDeals = sortRows(pageIdx, dealRows);
+  const visibleSales = sortRows(pageIdx, collectSalesRows());
 
-  let html = '';
-  if (tickerItems.length) {
-    html += `<section class="deals-hero" aria-label="Today's deals">
-      ${tickerItems.map(t => `<div class="deal-card">${escHtml(t)}</div>`).join('')}
-    </section>`;
-  }
-
-  html += `<section class="deals-section" aria-label="Deli flower pricing">
+  let html = `<section class="deals-section" aria-label="Deli flower pricing">
     <div class="deals-section-head">Deli Flower Pricing</div>
     <div class="deals-section-body">${renderTierCompact()}</div>
   </section>`;
 
-  if (visibleDeals.length) {
-    html += `<section class="deals-section" aria-label="${escAttr(dealsTitle)}">
-      <div class="deals-section-head">${escHtml(dealsTitle)}</div>
+  if (visibleSales.length) {
+    html += `<section class="deals-section" aria-label="Sales and specials">
+      <div class="deals-section-head">Sales &amp; Specials</div>
       <div class="deals-section-body">
         <div class="col-head cols-flower">
-          <span>Strain</span><span>THC</span><span>CBD</span><span>Price</span>
+          <span>Item</span><span>THC</span><span>CBD</span><span>Price</span>
         </div>
-        ${visibleDeals.map(row => renderProductRow(pageIdx, row.section, row, 'flower', 'neutral')).join('')}
+        ${visibleSales.map(row => renderProductRow(pageIdx, row.section, row, 'flower', rowTypeAccent(row))).join('')}
       </div>
     </section>`;
   }
@@ -1668,11 +1647,13 @@ function renderPreRollsPage(pageIdx, sections) {
     const { format, brand } = splitSectionLabel(secName);
     const rows = withSection(secName, sections[secName]);
     const mostlyPct = rows.every(r => !r.detail || /^[\d.]+\s*%?$/.test(r.detail.trim()));
+    const sectionType = typeFromSection(secName);
     html += renderCard({
       pageIdx,
       title: brand || secName,
       format,
       blurb: brandBlurbFor(brand),
+      accent: sectionType || undefined,
       mode: mostlyPct ? 'flower' : 'detail',
       items: rows,
     });
@@ -1685,11 +1666,13 @@ function renderBrandCardsPage(pageIdx, sections) {
   let html = renderSortBar() + `<div class="card-grid cols-auto">`;
   for (const [secName, rows] of Object.entries(sections)) {
     const { format, brand } = splitSectionLabel(secName);
+    const sectionType = typeFromSection(secName);
     html += renderCard({
       pageIdx,
       title: brand || secName,
       format,
       blurb: brandBlurbFor(brand),
+      accent: sectionType || undefined,
       mode: 'detail',
       items: withSection(secName, rows),
     });
