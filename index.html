@@ -665,11 +665,7 @@
     min-width: 0;
     border-bottom: 1px solid rgba(169,124,80,0.10);
     transition: opacity 0.2s;
-    border-left: 3px solid transparent;
   }
-  .product-row[data-type="sativa"] { border-left-color: var(--sativa); }
-  .product-row[data-type="hybrid"] { border-left-color: var(--hybrid); }
-  .product-row[data-type="indica"] { border-left-color: var(--indica); }
   .product-row.cols-default {
     grid-template-columns: minmax(0, 1fr) minmax(var(--col-price), max-content);
   }
@@ -1339,6 +1335,16 @@ function sortRows(pageIdx, rows) {
   });
 }
 
+function isHouseMixRow(row) {
+  return /house\s*mix/i.test(row.name || '') || /house\s*mix/i.test(row.section || '');
+}
+
+function sortRowsPinBottom(pageIdx, rows, pinFn) {
+  const main = rows.filter(r => !pinFn(r));
+  const pinned = rows.filter(pinFn);
+  return [...sortRows(pageIdx, main), ...sortRows(pageIdx, pinned)];
+}
+
 function setSortField(field) {
   sortField = field;
   renderAllPages();
@@ -1405,18 +1411,12 @@ function renderTierBanner() {
     </section>`;
 }
 
-function productRowTypeAttr(row, typeAccent) {
-  const t = rowTypeAccent(row, typeAccent);
-  return t ? ` data-type="${escAttr(t)}"` : '';
-}
-
 function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
   const key = `${pageIdx}|${secName}|${row.name}`;
   const enriched = enrichRow(row);
-  const typeAttr = productRowTypeAttr(row, typeAccent);
 
   if (mode === 'flower') {
-    return `<div class="product-row cols-flower"${typeAttr} data-key="${escAttr(key)}" onclick="rowClick(this)">
+    return `<div class="product-row cols-flower" data-key="${escAttr(key)}" onclick="rowClick(this)">
       <div class="toggle-btn">
         <div class="oos-indicator"></div>
         <div class="product-name-wrap">
@@ -1431,7 +1431,7 @@ function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
   }
 
   if (mode === 'detail') {
-    return `<div class="product-row cols-detail"${typeAttr} data-key="${escAttr(key)}" onclick="rowClick(this)">
+    return `<div class="product-row cols-detail" data-key="${escAttr(key)}" onclick="rowClick(this)">
       <div class="toggle-btn">
         <div class="oos-indicator"></div>
         <div class="product-name-wrap">
@@ -1444,7 +1444,7 @@ function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
     </div>`;
   }
 
-  return `<div class="product-row cols-default"${typeAttr} data-key="${escAttr(key)}" onclick="rowClick(this)">
+  return `<div class="product-row cols-default" data-key="${escAttr(key)}" onclick="rowClick(this)">
     <div class="toggle-btn">
       <div class="oos-indicator"></div>
       <div class="product-name-wrap">
@@ -1459,13 +1459,14 @@ function renderProductRow(pageIdx, secName, row, mode, typeAccent) {
   </div>`;
 }
 
-function renderCard({ pageIdx, title, format, blurb, accent, featured, span, mode, items }) {
+function renderCard({ pageIdx, title, format, blurb, accent, featured, span, mode, items, sortFn }) {
   const colHead = mode === 'flower'
     ? `<div class="col-head cols-flower"><span>Strain</span><span>THC</span><span>CBD</span><span>Price</span></div>`
     : mode === 'detail'
       ? `<div class="col-head cols-detail"><span>Name</span><span>Potency</span><span>Price</span></div>`
       : '';
-  const visible = sortRows(pageIdx, items);
+  const sorter = sortFn || sortRows;
+  const visible = sorter(pageIdx, items);
   if (!visible.length) return '';
   const rowsHtml = visible.map(row =>
     renderProductRow(pageIdx, row.section || title, row, mode || 'default', accent)
@@ -1552,6 +1553,7 @@ function rebuildStrainTypeIndex() {
 }
 
 function typeFromRow(row) {
+  if (isHouseMixRow(row)) return 'hybrid';
   return row.type
     || typeFromSection(row.section)
     || typeFromText(row.name)
@@ -1688,6 +1690,7 @@ function renderPreRollsPage(pageIdx, sections) {
       span: 'span-2',
       mode: 'detail',
       items: houseRows,
+      sortFn: (idx, rows) => sortRowsPinBottom(idx, rows, isHouseMixRow),
     });
   }
 
