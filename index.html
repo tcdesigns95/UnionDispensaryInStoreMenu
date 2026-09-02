@@ -1716,9 +1716,14 @@ function withSection(secName, rows) {
   return rows.map(r => ({ ...r, section: r.section || secName }));
 }
 
+function isBudgetDeliTier(secName) {
+  return /\$5[–\-]6g|5[–\-]6g\s*Tier/i.test(secName || '');
+}
+
 function splitFlowerSections(sections) {
   const byType = { sativa: [], hybrid: [], indica: [] };
   const sales = [];
+  const budgetDeli = [];
   for (const [secName, rows] of Object.entries(sections || {})) {
     const tagged = withSection(secName, rows);
     const sectionType = typeFromSection(secName);
@@ -1732,7 +1737,11 @@ function splitFlowerSections(sections) {
     }
 
     if (isDeli && sectionType) {
-      byType[sectionType].push(...tagged);
+      if (isBudgetDeliTier(secName)) {
+        budgetDeli.push(...tagged);
+      } else {
+        byType[sectionType].push(...tagged);
+      }
       continue;
     }
 
@@ -1745,7 +1754,12 @@ function splitFlowerSections(sections) {
       }
     }
   }
-  return { byType, sales };
+  return { byType, sales, budgetDeli };
+}
+
+function collectBudgetDeliRows() {
+  const { budgetDeli } = splitFlowerSections(menuData['Flower'] || {});
+  return budgetDeli;
 }
 
 function collectHouseMixRows() {
@@ -1781,7 +1795,9 @@ function renderFlowerPage(pageIdx, sections) {
 
 function renderDealsPage(pageIdx) {
   const houseMixRows = collectHouseMixRows();
+  const budgetDeliRows = collectBudgetDeliRows();
   const visibleHouseMix = sortRows(pageIdx, houseMixRows);
+  const visibleBudgetDeli = sortRows(pageIdx, budgetDeliRows);
   const visibleSales = sortRows(pageIdx, collectSalesRows());
 
   let html = '';
@@ -1798,6 +1814,18 @@ function renderDealsPage(pageIdx) {
       mode: 'detail',
       items: visibleHouseMix,
     });
+  }
+
+  if (visibleBudgetDeli.length) {
+    html += `<section class="deals-section" aria-label="$5–6 per gram flower">
+      <div class="deals-section-head">$5–6/g Flower</div>
+      <div class="deals-section-body">
+        <div class="col-head cols-flower">
+          <span>Strain</span><span>THC</span><span>CBD</span><span>Price</span>
+        </div>
+        ${visibleBudgetDeli.map(row => renderProductRow(pageIdx, row.section, row, 'flower', rowTypeAccent(row))).join('')}
+      </div>
+    </section>`;
   }
 
   if (visibleSales.length) {
